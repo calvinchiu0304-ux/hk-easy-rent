@@ -11,9 +11,7 @@
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body {
-      font-size: 18px; /* 長者預設大字體 base */
-    }
+    body { font-size: 18px; }
     .font-size-sm { font-size: 16px; }
     .font-size-md { font-size: 18px; }
     .font-size-lg { font-size: 22px; }
@@ -22,13 +20,11 @@
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col font-size-md" id="appBody">
 
-  <!-- 頂部標題與字體選擇器 -->
   <header class="bg-blue-700 text-white p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-4xl mx-auto flex justify-between items-center">
       <h1 class="text-2xl md:text-3xl font-black tracking-wide cursor-pointer" onclick="filterByDistrict('ALL')">
         🏠 香港簡單租屋網
       </h1>
-      <!-- 字體切換 -->
       <div class="flex items-center space-x-1 bg-blue-800 p-1 rounded-lg text-sm">
         <span class="px-2 text-slate-200">字體:</span>
         <button onclick="changeFontSize('md')" class="px-2 py-1 bg-blue-600 rounded font-bold">中</button>
@@ -38,10 +34,7 @@
     </div>
   </header>
 
-  <!-- 主要內容區 -->
   <main class="max-w-4xl mx-auto w-full p-3 md:p-6 flex-grow space-y-6">
-
-    <!-- 頂部按鈕區 -->
     <div class="flex flex-col sm:flex-row gap-3">
       <button onclick="openPostModal()" class="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-900 font-black py-4 px-6 rounded-2xl shadow-lg text-xl flex items-center justify-center space-x-2 border-2 border-amber-400 active:scale-95 transition">
         <i class="fa-solid fa-circle-plus text-2xl"></i>
@@ -49,14 +42,11 @@
       </button>
     </div>
 
-    <!-- 十八區篩選器 (大字塊) -->
     <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
       <div class="flex justify-between items-center mb-3">
         <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-location-dot text-blue-600 mr-2"></i>選擇香港區域</h2>
         <button onclick="filterByDistrict('ALL')" class="text-blue-600 font-bold underline text-base">顯示全部</button>
       </div>
-
-      <!-- 區域分組 -->
       <div class="space-y-3">
         <div>
           <span class="text-xs font-bold text-slate-400 block mb-1">九龍區</span>
@@ -73,13 +63,11 @@
       </div>
     </section>
 
-    <!-- 當前篩選標題 -->
     <div class="flex justify-between items-end border-b-2 border-slate-300 pb-2">
       <h3 class="text-xl font-black text-slate-800" id="currentFilterText">所有最新租盤</h3>
       <span class="text-slate-500 font-bold" id="listingCount">共 0 個租盤</span>
     </div>
 
-    <!-- 租盤列表卡片容器 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="listingsContainer">
       <div class="col-span-full text-center py-12 text-slate-400">
         <i class="fa-solid fa-spinner fa-spin text-4xl mb-3"></i>
@@ -88,16 +76,14 @@
     </div>
   </main>
 
-  <!-- 發布租盤彈窗 Modal (極簡流程) -->
   <div id="postModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3">
     <div class="bg-white rounded-3xl max-w-lg w-full p-5 max-h-[90vh] overflow-y-auto shadow-2xl relative border-4 border-blue-600">
       <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-3xl font-black px-3 py-1">✕</button>
 
       <h2 class="text-2xl font-black text-blue-700 mb-1"><i class="fa-solid fa-house-medical mr-2"></i>免費業主放盤</h2>
-      <p class="text-slate-500 text-sm mb-4">無需填寫個人個人資料，填寫單位簡單資料即可發布。</p>
+      <p class="text-slate-500 text-sm mb-4">無需填寫個人資料，填寫單位簡單資料即可發布。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-        <!-- 圖片上傳 -->
         <div class="bg-slate-50 p-3 rounded-xl border-2 border-dashed border-slate-300">
           <label class="block font-black text-slate-700 mb-1">1. 上傳單位圖片 (必填)</label>
           <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)" class="w-full text-base text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-base file:font-black file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
@@ -106,21 +92,16 @@
           </div>
         </div>
 
-        <!-- 租金 -->
         <div>
           <label class="block font-black text-slate-700 mb-1">2. 每月租金 (HKD)</label>
           <input type="number" id="priceInput" required placeholder="例如：12000" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl font-bold focus:border-blue-600 outline-none">
         </div>
 
-        <!-- 地區選擇 -->
         <div>
           <label class="block font-black text-slate-700 mb-1">3. 地區 (香港十八區)</label>
-          <select id="districtInput" required class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold bg-white focus:border-blue-600 outline-none">
-            <!-- JS 動態生成 -->
-          </select>
+          <select id="districtInput" required class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold bg-white focus:border-blue-600 outline-none"></select>
         </div>
 
-        <!-- 詳細地址與 GPS 定位 -->
         <div>
           <div class="flex justify-between items-center mb-1">
             <label class="block font-black text-slate-700">4. 詳細地址</label>
@@ -131,7 +112,6 @@
           <input type="text" id="addressInput" required placeholder="例如：彌敦道688號旺角中心高層" class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold focus:border-blue-600 outline-none">
         </div>
 
-        <!-- 聯絡資料 (電話 / 微信號) -->
         <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 space-y-3">
           <span class="block font-black text-blue-900">5. 業主聯絡方式 (至少填一項)</span>
           <div>
@@ -157,12 +137,10 @@
   </footer>
 
   <script>
-    // --- 1. Supabase 連線設定 ---
     const SUPABASE_URL = "https://dfzyweiypnho.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR6Znl3ZWl5cG5ob2RjZmZ1c3N6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNjU0ODAsImV4cCI6MjEwODg0MTQ4MH0.4IGm5K2N9RDr_RAO6STivC9E6_HxlLyMg6tCzTS6zEg";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // --- 2. 香港十八區資料與交通數據對應庫 ---
     const districtsData = {
       kowloon: ["油尖旺", "深水埗", "九龍城", "黃大仙", "觀塘"],
       hkIsland: ["中西區", "灣仔", "東區", "南區"],
@@ -191,50 +169,43 @@
     };
 
     let currentDistrictFilter = 'ALL';
+    let uploadedBase64Image = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80";
 
-    // --- 3. 初始化頁面區塊 ---
     window.addEventListener('DOMContentLoaded', () => {
       renderDistrictButtons();
       populateDistrictSelect();
       loadListings();
     });
 
-    // 改變字體大小
     function changeFontSize(size) {
       const body = document.getElementById('appBody');
       body.classList.remove('font-size-md', 'font-size-lg', 'font-size-xl');
       body.classList.add(`font-size-${size}`);
     }
 
-    // 渲染十八區按鈕
     function renderDistrictButtons() {
       const createBtn = d => `<button onclick="filterByDistrict('${d}')" class="district-btn px-3 py-2 bg-slate-200 hover:bg-blue-600 hover:text-white rounded-xl font-bold text-sm sm:text-base transition">${d}</button>`;
-      
       document.getElementById('kowloonDistricts').innerHTML = districtsData.kowloon.map(createBtn).join('');
       document.getElementById('hkIslandDistricts').innerHTML = districtsData.hkIsland.map(createBtn).join('');
       document.getElementById('ntDistricts').innerHTML = districtsData.nt.map(createBtn).join('');
     }
 
-    // 填寫放盤選單的地區選項
     function populateDistrictSelect() {
       const select = document.getElementById('districtInput');
       const allDistricts = [...districtsData.kowloon, ...districtsData.hkIsland, ...districtsData.nt];
       select.innerHTML = allDistricts.map(d => `<option value="${d}">${d}</option>`).join('');
     }
 
-    // --- 4. 讀取與渲染 Supabase 租盤 ---
     async function loadListings() {
       const container = document.getElementById('listingsContainer');
       container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-4xl mb-3"></i><p>載入中...</p></div>`;
 
       let query = supabaseClient.from('listings').select('*').order('created_at', { ascending: false });
-      
       if (currentDistrictFilter !== 'ALL') {
         query = query.eq('district', currentDistrictFilter);
       }
 
       const { data, error } = await query;
-
       if (error) {
         console.error(error);
         container.innerHTML = `<div class="col-span-full text-center py-8 text-red-500 font-bold">無法載入租盤數據，請重新整理頁面。</div>`;
@@ -254,108 +225,58 @@
           <div>
             <div class="relative h-56 bg-slate-200">
               <img src="${item.image_url}" alt="租盤圖片" class="w-full h-full object-cover">
-              <span class="absolute top-3 left-3 bg-blue-700 text-white font-black px-3 py-1 rounded-xl text-base shadow">
-                ${item.district}
-              </span>
-              <span class="absolute bottom-3 right-3 bg-slate-900/80 text-white font-bold px-2 py-1 rounded-lg text-xs">
-                30天效期
-              </span>
+              <span class="absolute top-3 left-3 bg-blue-700 text-white font-black px-3 py-1 rounded-xl text-base shadow">${item.district}</span>
+              <span class="absolute bottom-3 right-3 bg-slate-900/80 text-white font-bold px-2 py-1 rounded-lg text-xs">30天效期</span>
             </div>
-
             <div class="p-4 space-y-3">
-              <div class="flex justify-between items-baseline">
-                <span class="text-3xl font-black text-amber-600">HK$ ${Number(item.price).toLocaleString()} <span class="text-base font-normal text-slate-500">/月</span></span>
-              </div>
+              <span class="text-3xl font-black text-amber-600">HK$ ${Number(item.price).toLocaleString()} <span class="text-base font-normal text-slate-500">/月</span></span>
               <h4 class="text-xl font-black text-slate-900 leading-snug"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>${item.address}</h4>
-              
-              <!-- 系統自動補上交通資訊 -->
               <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm space-y-1">
-                <div class="text-slate-700 font-bold flex items-center gap-1">
-                  <i class="fa-solid fa-train-subway text-blue-600"></i>
-                  <span>${item.transport_mtr || '鄰近交通節點'}</span>
-                </div>
-                <div class="text-slate-500 text-xs flex items-center gap-1">
-                  <i class="fa-solid fa-bus text-emerald-600"></i>
-                  <span>${item.transport_bus || '附近設有多條主要巴士路線'}</span>
-                </div>
+                <div class="text-slate-700 font-bold flex items-center gap-1"><i class="fa-solid fa-train-subway text-blue-600"></i><span>${item.transport_mtr || '鄰近交通節點'}</span></div>
+                <div class="text-slate-500 text-xs flex items-center gap-1"><i class="fa-solid fa-bus text-emerald-600"></i><span>${item.transport_bus || '附近設有多條主要巴士路線'}</span></div>
               </div>
             </div>
           </div>
-
-          <!-- 聯絡與分享按鈕 -->
           <div class="p-4 pt-0 space-y-2">
             <div class="grid grid-cols-2 gap-2">
-              ${item.phone ? `
-                <a href="https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('你好，我在香港租屋網看到你的租盤：' + item.address)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1">
-                  <i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp
-                </a>
-              ` : ''}
-              ${item.wechat_id ? `
-                <button onclick="copyWeChat('${item.wechat_id}')" class="bg-emerald-800 hover:bg-emerald-900 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1">
-                  <i class="fa-brands fa-weixin text-xl"></i> 微信號
-                </button>
-              ` : ''}
-            </div>
-
-            <div class="flex gap-2 text-xs pt-2 border-t">
-              <button onclick="shareListing('${item.address}', ${item.price})" class="flex-1 text-slate-500 font-bold hover:text-blue-600 py-1 flex items-center justify-center gap-1">
-                <i class="fa-solid fa-share-nodes"></i> 分享此盤
-              </button>
-              <button onclick="reportListing(${item.id})" class="text-slate-400 font-bold hover:text-red-500 py-1 flex items-center justify-center gap-1">
-                <i class="fa-solid fa-triangle-exclamation"></i> 舉報
-              </button>
+              ${item.phone ? `<a href="https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('你好，我在香港租屋網看到你的租盤：' + item.address)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1"><i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp</a>` : ''}
+              ${item.wechat_id ? `<button onclick="copyWeChat('${item.wechat_id}')" class="bg-emerald-800 hover:bg-emerald-900 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1"><i class="fa-brands fa-weixin text-xl"></i> 微信號</button>` : ''}
             </div>
           </div>
         </div>
       `).join('');
     }
 
-    // 按地區篩選
     function filterByDistrict(district) {
       currentDistrictFilter = district;
       loadListings();
     }
 
-    // --- 5. Modal 控制與上傳發布邏輯 ---
-    function openPostModal() {
-      document.getElementById('postModal').classList.remove('hidden');
-    }
-
-    function closePostModal() {
-      document.getElementById('postModal').classList.add('hidden');
-    }
+    function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
+    function closePostModal() { document.getElementById('postModal').classList.add('hidden'); }
 
     function previewImage(event) {
       const file = event.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = e => {
-          document.getElementById('imagePreview').src = e.target.result;
+          uploadedBase64Image = e.target.result; // 直接轉為字串，繞過 Storage 桶上傳
+          document.getElementById('imagePreview').src = uploadedBase64Image;
           document.getElementById('imagePreviewContainer').classList.remove('hidden');
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // 模擬 GPS 定位帶出地址
     function useGPS() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          pos => {
-            document.getElementById('addressInput').value = "香港旺角彌敦道附近 (GPS已定位)";
-            alert("已成功透過 GPS 取得大致位置！請補全詳細大廈/單位號碼。");
-          },
-          err => {
-            document.getElementById('addressInput').value = "香港油尖旺區";
-            alert("無法自動獲取權限，已填入基礎區域。");
-          }
+          pos => { document.getElementById('addressInput').value = "香港旺角彌敦道附近 (GPS已定位)"; alert("已成功透過 GPS 取得大致位置！"); },
+          err => { document.getElementById('addressInput').value = "香港油尖旺區"; alert("無法自動獲取定位，已填入基礎區域。"); }
         );
-      } else {
-        alert("瀏覽器不支援 GPS 定位");
-      }
+      } else { alert("瀏覽器不支援 GPS 定位"); }
     }
 
-    // 表單提交寫入 Supabase
     async function handleFormSubmit(event) {
       event.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
@@ -363,37 +284,14 @@
       submitBtn.innerText = "⏳ 發布中，請稍候...";
 
       try {
-        const imageFile = document.getElementById('imageInput').files[0];
-        let imageUrl = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80"; // 預設圖
-
-        // 1. 如果業主有選擇相片，上載至 rent-images Bucket
-        if (imageFile) {
-          const fileExt = imageFile.name.split('.').pop();
-          const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-          
-          const { data: uploadData, error: uploadError } = await supabaseClient.storage
-            .from('rent-images')
-            .upload(fileName, imageFile);
-
-          if (uploadError) throw uploadError;
-
-          const { data: publicUrlData } = supabaseClient.storage
-            .from('rent-images')
-            .getPublicUrl(fileName);
-
-          imageUrl = publicUrlData.publicUrl;
-        }
-
-        // 2. 自動匹配最近的交通資訊
         const districtVal = document.getElementById('districtInput').value;
         const transportInfo = transportData[districtVal] || { mtr: "鄰近主要鐵路站", bus: "附近有多條巴士線" };
 
-        // 3. 寫入 listings 資料庫
         const newListing = {
           district: districtVal,
           address: document.getElementById('addressInput').value,
           price: Number(document.getElementById('priceInput').value),
-          image_url: imageUrl,
+          image_url: uploadedBase64Image,
           phone: document.getElementById('phoneInput').value || null,
           wechat_id: document.getElementById('wechatInput').value || null,
           transport_mtr: transportInfo.mtr,
@@ -401,15 +299,13 @@
         };
 
         const { error: insertError } = await supabaseClient.from('listings').insert([newListing]);
-
         if (insertError) throw insertError;
 
         alert("🎉 租盤發布成功！全網用戶現已可瀏覽。");
         document.getElementById('listingForm').reset();
         document.getElementById('imagePreviewContainer').classList.add('hidden');
         closePostModal();
-        loadListings(); // 重新讀取
-
+        loadListings();
       } catch (err) {
         console.error(err);
         alert("發布失敗：" + err.message);
@@ -419,28 +315,9 @@
       }
     }
 
-    // 複製微信號工具
     function copyWeChat(id) {
       navigator.clipboard.writeText(id);
-      alert(`已複製業主微信號：${id}\n請打開微信搜尋並加為好友。`);
-    }
-
-    // 分享工具
-    function shareListing(address, price) {
-      const shareText = `【香港租盤分享】${address}，租金：HK$ ${price}/月。快來看看！`;
-      if (navigator.share) {
-        navigator.share({ title: '香港簡單租屋網', text: shareText, url: window.location.href });
-      } else {
-        navigator.clipboard.writeText(shareText + " " + window.location.href);
-        alert("租盤連結及簡介已複製到剪貼簿，可直接貼上分享至 WhatsApp 或微信！");
-      }
-    }
-
-    // 舉報工具
-    async function reportListing(id) {
-      if (confirm("確定舉報此租盤？如該單位已租出或包含虛假資訊，我們將會在核驗後隱藏。")) {
-        alert("感謝舉報，系統已記錄該要求。");
-      }
+      alert(`已複製業主微信號：${id}`);
     }
   </script>
 </body>
