@@ -34,7 +34,7 @@
   </header>
 
   <main class="max-w-4xl mx-auto w-full p-3 md:p-6 flex-grow space-y-6">
-    <!-- 主行動呼籲：業主放盤按鈕 (琥珀金：高效高價值心理引導) -->
+    <!-- 主行動呼籲：業主放盤按鈕 -->
     <div class="flex flex-col sm:flex-row gap-3">
       <button onclick="openPostModal()" class="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-4 px-6 rounded-2xl shadow-md hover:shadow-lg text-xl flex items-center justify-center space-x-2 border-2 border-amber-300 active:scale-95 transition">
         <i class="fa-solid fa-circle-plus text-2xl"></i>
@@ -42,7 +42,7 @@
       </button>
     </div>
 
-    <!-- 區域選擇選單 (清晰卡片架構) -->
+    <!-- 區域選擇選單 -->
     <section class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200/80 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
         <h2 class="text-xl font-black text-blue-900 flex items-center"><i class="fa-solid fa-location-dot text-blue-600 mr-2"></i>選擇香港區域</h2>
@@ -70,7 +70,7 @@
       <span class="text-slate-500 font-bold" id="listingCount">共 0 個租盤</span>
     </div>
 
-    <!-- 租盤列表容器 (雙欄適應) -->
+    <!-- 租盤列表容器 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="listingsContainer">
       <div class="col-span-full text-center py-12 text-slate-400">
         <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-blue-600"></i>
@@ -78,7 +78,7 @@
       </div>
     </div>
 
-    <!-- 心理學次要放盤引導：瀏覽完租盤後的動線轉化 -->
+    <!-- 次要放盤引導區 -->
     <div class="bg-blue-50 border border-blue-200/80 rounded-3xl p-5 text-center space-y-3 shadow-sm mt-8">
       <h4 class="text-lg font-black text-blue-900">您也有香港單位準備出租？</h4>
       <p class="text-sm text-slate-600">免經中介、無手續費、無需填寫個人資料，30 秒快速上架。</p>
@@ -97,9 +97,14 @@
       <p class="text-slate-500 text-sm mb-4">系統會根據地區自動帶出交通與口岸指引，您可自由補充。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-        <div class="bg-slate-50 p-3 rounded-2xl border-2 border-dashed border-slate-300">
-          <label class="block font-black text-slate-800 mb-1">1. 單位圖片網址 (選填)</label>
-          <input type="url" id="imageUrlInput" placeholder="https://example.com/photo.jpg" class="w-full p-2.5 border rounded-xl font-bold text-sm outline-none focus:border-blue-600">
+        
+        <!-- 優化後的相片選擇區塊 (支援手機選擇與現場拍照) -->
+        <div class="bg-slate-50 p-3.5 rounded-2xl border-2 border-dashed border-blue-300 space-y-2">
+          <label class="block font-black text-slate-800 text-sm">1. 上傳單位相片 (選填)</label>
+          <input type="file" id="imageFileInput" accept="image/*" onchange="previewSelectedImage(event)" class="w-full text-sm text-slate-500 file:mr-3 file:py-2 px-3 file:rounded-xl file:border-0 file:text-sm file:font-black file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 cursor-pointer">
+          <div id="imagePreviewContainer" class="hidden mt-2">
+            <img id="imagePreview" class="h-44 w-full object-cover rounded-xl border-2 border-blue-400 shadow-sm">
+          </div>
         </div>
 
         <div>
@@ -122,7 +127,7 @@
           <input type="text" id="addressInput" required placeholder="例如：彌敦道688號旺角中心高層" class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold focus:border-blue-600 outline-none">
         </div>
 
-        <!-- 交通資訊自定義欄位 (智慧自動帶出) -->
+        <!-- 交通資訊自定義欄位 -->
         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-300/80 space-y-3">
           <span class="block font-black text-slate-800 text-sm">5. 交通與口岸指引 (已預載，可修改)</span>
           <div>
@@ -154,7 +159,7 @@
     </div>
   </div>
 
-  <!-- 頁尾 Footer (深藍灰背景，強化專業安定感) -->
+  <!-- 頁尾 Footer -->
   <footer class="bg-slate-900 text-slate-300 p-6 text-center text-base mt-auto space-y-1.5 border-t border-slate-800">
     <p class="font-bold">🏠 香港極簡免登記租屋網 &copy; 2026</p>
     <p class="text-xs text-slate-400">本平台所有盤源維護 30 天效期，免手續費免登記。</p>
@@ -193,6 +198,7 @@
 
     let allListings = [];
     let currentDistrictFilter = 'ALL';
+    let uploadedBase64Image = null; // 儲存用戶選擇的照片Base64字串
 
     window.addEventListener('DOMContentLoaded', () => {
       renderDistrictButtons();
@@ -230,6 +236,20 @@
       const info = transportData[district] || { mtr: "鄰近主要港鐵站出口", bus: "多條主要巴士路線" };
       document.getElementById('transportMtrInput').value = info.mtr;
       document.getElementById('transportBusInput').value = info.bus;
+    }
+
+    // 處理相片選擇與預覽
+    function previewSelectedImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          uploadedBase64Image = e.target.result;
+          document.getElementById('imagePreview').src = uploadedBase64Image;
+          document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
     }
 
     async function loadListings() {
@@ -276,7 +296,6 @@
         const transportMtr = item.transport_mtr || (transportData[item.district] ? transportData[item.district].mtr : '鄰近主要港鐵站出口');
         const transportBus = item.transport_bus || (transportData[item.district] ? transportData[item.district].bus : '附近有多條主要巴士路線');
 
-        // 按鈕透明化處理：未填寫時顯示灰色停用狀態，非直接隱藏
         let whatsappBtn = '';
         if (item.phone) {
           whatsappBtn = `<a href="https://wa.me/852${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('你好，我在香港租屋網看到你的租盤：' + item.address)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp</a>`;
@@ -303,7 +322,6 @@
                 <span class="text-3xl font-black text-amber-600 tracking-tight">HK$ ${Number(item.price || 0).toLocaleString()} <span class="text-base font-normal text-slate-500">/月</span></span>
                 <h4 class="text-xl font-black text-slate-900 leading-snug"><i class="fa-solid fa-location-dot text-red-500 mr-1.5"></i>${item.address || '詳細地址請查詢'}</h4>
                 
-                <!-- 精準交通與口岸指南 -->
                 <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/70 text-sm space-y-1.5">
                   <div class="text-slate-800 font-bold flex items-center gap-1.5"><i class="fa-solid fa-train-subway text-blue-700"></i><span>${transportMtr}</span></div>
                   <div class="text-slate-600 text-xs flex items-center gap-1.5"><i class="fa-solid fa-bus text-emerald-600"></i><span>${transportBus}</span></div>
@@ -351,7 +369,7 @@
           district: districtVal,
           address: document.getElementById('addressInput').value,
           price: Number(document.getElementById('priceInput').value),
-          image_url: document.getElementById('imageUrlInput').value || null,
+          image_url: uploadedBase64Image, // 存入相片Base64（若沒上傳則為null，自動使用預設圖）
           phone: document.getElementById('phoneInput').value || null,
           wechat_id: document.getElementById('wechatInput').value || null,
           transport_mtr: document.getElementById('transportMtrInput').value,
@@ -376,6 +394,8 @@
 
         alert("🎉 租盤發布成功！全網用戶現已可瀏覽。");
         document.getElementById('listingForm').reset();
+        uploadedBase64Image = null;
+        document.getElementById('imagePreviewContainer').classList.add('hidden');
         onDistrictChange();
         closePostModal();
         loadListings();
