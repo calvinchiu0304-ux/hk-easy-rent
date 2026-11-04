@@ -94,7 +94,7 @@
       <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-3xl font-black px-3 py-1">✕</button>
 
       <h2 class="text-2xl font-black text-blue-900 mb-1"><i class="fa-solid fa-house-medical mr-2 text-amber-500"></i>免費業主放盤</h2>
-      <p class="text-slate-500 text-sm mb-4">使用 GPS 定位後可一鍵快選真實門牌大廈，系統會自動預載獨立交通資訊。</p>
+      <p class="text-slate-500 text-sm mb-4">輸入大廈或街道名稱，自動連動政府權威圖資與交通指南。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
         
@@ -112,29 +112,25 @@
           <input type="number" id="priceInput" required placeholder="例如：12000" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl font-bold focus:border-blue-600 outline-none">
         </div>
 
-        <div>
-          <label class="block font-black text-slate-800 mb-1">3. 地區 (香港十八區)</label>
-          <select id="districtInput" onchange="onDistrictChange()" required class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold bg-white focus:border-blue-600 outline-none"></select>
+        <div class="relative">
+          <div class="flex justify-between items-center mb-1">
+            <label class="block font-black text-slate-800">3. 詳細地址與大廈名稱</label>
+            <span class="text-xs font-bold text-emerald-700">🏛️ 官方法律圖資檢索</span>
+          </div>
+          <input type="text" id="addressInput" oninput="searchGovAddress(this.value)" required placeholder="例如：荔枝角道168號 / 福利街8號" autocomplete="off" class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold focus:border-blue-600 outline-none">
+          
+          <!-- 政府 API 動態選單列表 -->
+          <div id="govAddressDropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border-2 border-blue-500 rounded-2xl shadow-2xl z-50 max-h-60 overflow-y-auto divide-y divide-slate-100"></div>
         </div>
 
         <div>
-          <div class="flex justify-between items-center mb-1">
-            <label class="block font-black text-slate-800">4. 詳細地址與門牌快選</label>
-            <button type="button" onclick="useGPS()" id="gpsBtn" class="text-sm bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded-lg border border-emerald-300 flex items-center gap-1 hover:bg-emerald-200 transition">
-              <i class="fa-solid fa-location-crosshairs"></i> GPS真實定位與門牌
-            </button>
-          </div>
-          <input type="text" id="addressInput" required placeholder="例如：荔枝角道100號" class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold focus:border-blue-600 outline-none">
-          
-          <div id="addressSuggestions" class="hidden mt-2 p-2 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1.5">
-            <span class="text-xs font-bold text-emerald-800 block">💡 根據您真實 GPS 定位產生的鄰近門牌大廈：</span>
-            <div class="flex flex-wrap gap-1.5" id="suggestionButtons"></div>
-          </div>
+          <label class="block font-black text-slate-800 mb-1">4. 地區 (自動連動切換)</label>
+          <select id="districtInput" onchange="onDistrictChange()" required class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold bg-white focus:border-blue-600 outline-none"></select>
         </div>
 
         <!-- 三項獨立交通資訊欄位 -->
         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-300/80 space-y-3">
-          <span class="block font-black text-slate-800 text-sm">5. 交通與口岸指南 (可自由微調)</span>
+          <span class="block font-black text-slate-800 text-sm">5. 交通與口岸指南 (自動對應預載)</span>
           <div>
             <label class="text-xs font-bold text-slate-600">🚇 港鐵站與出入口</label>
             <input type="text" id="transportMtrInput" class="w-full p-2 border rounded-xl text-sm font-bold bg-white outline-none focus:border-blue-600">
@@ -186,7 +182,7 @@
 
     const transportData = {
       "油尖旺": { mtr: "港鐵旺角站 E1出口 / 尖沙咀站 / 朗豪坊", bus: "九巴 1, 1A, 2, 6, 9, 234X", china: "皇崗口岸直通巴 / 高鐵西九龍站直達" },
-      "深水埗": { mtr: "港鐵深水埗站 C2出口 / 長沙灣站 / 西九龍中心", bus: "九巴 2, 6F, 30X, 214 | 城巴 E21", china: "經屯馬線直達深圳灣口岸轉乘點" },
+      "深水埗": { mtr: "港鐵深水埗站 C2出口 / 長沙灣站 / 太子站", bus: "九巴 2, 6F, 30X, 214 | 城巴 E21", china: "經屯馬線直達深圳灣口岸轉乘點" },
       "九龍城": { mtr: "港鐵宋皇臺站 B2出口 / 土瓜灣站 / 啟德地標", bus: "九巴 1A, 2A, 11X, 107", china: "直達九龍城跨境巴總站" },
       "黃大仙": { mtr: "港鐵黃大仙站 B3出口 / 鑽石山站 / 黃大仙中心", bus: "九巴 2F, 3C, 11, 85M", china: "鑽石山高鐵接駁專線" },
       "觀塘": { mtr: "港鐵觀塘站 A2出口 / 牛頭角站 / APM商場", bus: "九巴 1A, 14, 16, 89D, 215X", china: "觀塘跨境直通巴總站 (經皇崗)" },
@@ -208,11 +204,19 @@
     let allListings = [];
     let currentDistrictFilter = 'ALL';
     let uploadedBase64Image = null;
+    let searchDebounceTimer = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       renderDistrictButtons();
       populateDistrictSelect();
       loadListings();
+      
+      // 點擊外部關閉下拉選單
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#addressInput') && !e.target.closest('#govAddressDropdown')) {
+          document.getElementById('govAddressDropdown').classList.add('hidden');
+        }
+      });
     });
 
     function changeFontSize(size) {
@@ -240,6 +244,76 @@
       onDistrictChange();
     }
 
+    // 調用香港政府地政總署地理 API (Data.gov.hk ALS)
+    function searchGovAddress(query) {
+      clearTimeout(searchDebounceTimer);
+      const dropdown = document.getElementById('govAddressDropdown');
+      
+      if (!query || query.trim().length < 2) {
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      searchDebounceTimer = setTimeout(async () => {
+        try {
+          // 免費調用政府官方 Address Lookup Service
+          const response = await fetch(`https://geodata.gov.hk/gs/api/v1.0.0/locationSearch?q=${encodeURIComponent(query)}`);
+          if (!response.ok) throw new Error("API Error");
+          
+          const results = await response.json();
+          if (results && results.length > 0) {
+            dropdown.innerHTML = results.slice(0, 6).map(item => {
+              const name = item.nameZH || item.nameEN;
+              const district = extractGovDistrict(item.addressZH || item.nameZH || "");
+              return `
+                <div onclick="selectGovAddress('${name}', '${district}')" class="p-3 hover:bg-blue-50 cursor-pointer transition flex justify-between items-center">
+                  <span class="font-bold text-slate-800 text-base">🏢 ${name}</span>
+                  <span class="text-xs bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-lg">${district || '香港區'}</span>
+                </div>
+              `;
+            }).join('');
+            dropdown.classList.remove('hidden');
+          } else {
+            dropdown.classList.add('hidden');
+          }
+        } catch (err) {
+          console.log("切換為預設比對模式");
+          autoMatchDistrictFallback(query);
+        }
+      }, 300);
+    }
+
+    // 解析政府 API 回傳的中文區域名稱
+    function extractGovDistrict(text) {
+      const allDistricts = [...districtsData.kowloon, ...districtsData.hkIsland, ...districtsData.nt];
+      for (let d of allDistricts) {
+        if (text.includes(d)) return d;
+      }
+      if (text.includes('旺角') || text.includes('尖沙咀') || text.includes('油麻地')) return '油尖旺';
+      if (text.includes('長沙灣') || text.includes('美孚') || text.includes('荔枝角')) return '深水埗';
+      return '深水埗';
+    }
+
+    function selectGovAddress(addressName, district) {
+      document.getElementById('addressInput').value = addressName;
+      document.getElementById('govAddressDropdown').classList.add('hidden');
+      
+      if (district) {
+        document.getElementById('districtInput').value = district;
+        onDistrictChange();
+      }
+    }
+
+    function autoMatchDistrictFallback(val) {
+      const select = document.getElementById('districtInput');
+      if (val.includes('荔枝角') || val.includes('福利街') || val.includes('深水埗') || val.includes('美孚')) {
+        select.value = '深水埗';
+      } else if (val.includes('彌敦道') || val.includes('旺角') || val.includes('尖沙咀')) {
+        select.value = '油尖旺';
+      }
+      onDistrictChange();
+    }
+
     function onDistrictChange() {
       const district = document.getElementById('districtInput').value;
       const info = transportData[district] || { mtr: "鄰近主要港鐵站出口", bus: "多條主要巴士路線", china: "跨境交通便利" };
@@ -259,87 +333,6 @@
         };
         reader.readAsDataURL(file);
       }
-    }
-
-    // 利用 OpenStreetMap (Nominatim API) 實現 100% 真實經緯度逆向地理解析
-    async function useGPS() {
-      const gpsBtn = document.getElementById('gpsBtn');
-      if (!navigator.geolocation) {
-        alert("您的瀏覽器不支援 GPS 定位");
-        return;
-      }
-
-      gpsBtn.disabled = true;
-      gpsBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 定位解析中...`;
-
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
-
-          try {
-            // 發送至 Nominatim 獲取用戶真實緯經度對應的街道名稱
-            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&accept-language=zh-HK`);
-            const data = await response.json();
-
-            let roadName = "荔枝角道"; // 預設降級備用
-            if (data.address) {
-              roadName = data.address.road || data.address.pedestrian || data.address.suburb || data.address.neighbourhood || "荔枝角道";
-            }
-
-            // 抓取真實門牌（若有），否則自動生成當前真實路名的鄰近門牌推測選項
-            const baseHouseNum = parseInt(data.address.house_number) || 100;
-            const realSuggestions = [
-              `${roadName}${baseHouseNum - 2}號`,
-              `${roadName}${baseHouseNum}號 (最接近當前GPS)`,
-              `${roadName}${baseHouseNum + 2}號`,
-              `${roadName}${baseHouseNum + 4}號`
-            ];
-
-            const container = document.getElementById('suggestionButtons');
-            container.innerHTML = realSuggestions.map(addr => 
-              `<button type="button" onclick="selectAddress('${addr}')" class="bg-white hover:bg-emerald-600 hover:text-white text-emerald-900 font-bold px-3 py-1.5 rounded-xl text-sm border border-emerald-300 shadow-xs transition">📍 ${addr}</button>`
-            ).join('');
-
-            document.getElementById('addressSuggestions').classList.remove('hidden');
-            document.getElementById('addressInput').value = realSuggestions[1];
-            
-            // 自動嘗試連動選擇地區選單
-            if (data.address.city_district || data.address.suburb) {
-              const districtName = data.address.city_district || data.address.suburb;
-              const districtSelect = document.getElementById('districtInput');
-              for (let option of districtSelect.options) {
-                if (districtName.includes(option.value) || option.value.includes(districtName)) {
-                  districtSelect.value = option.value;
-                  onDistrictChange();
-                  break;
-                }
-              }
-            }
-
-            alert(`✅ 已定位成功！您身處在「${roadName}」附近，請點選最精準的門牌！`);
-          } catch (err) {
-            console.error(err);
-            document.getElementById('addressInput').value = `荔枝角道100號附近 (GPS定位)`;
-            alert("獲取街道詳細名稱逾時，已為您填入大致座標區域。");
-          } finally {
-            gpsBtn.disabled = false;
-            gpsBtn.innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> GPS真實定位與門牌`;
-          }
-        },
-        (err) => {
-          console.error(err);
-          gpsBtn.disabled = false;
-          gpsBtn.innerHTML = `<i class="fa-solid fa-location-crosshairs"></i> GPS真實定位與門牌`;
-          alert("無法獲取您的 GPS 權限，請確認手機已開啟定位權限。");
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    }
-
-    function selectAddress(addr) {
-      document.getElementById('addressInput').value = addr;
-      document.getElementById('addressSuggestions').classList.add('hidden');
     }
 
     function openMap(query) {
@@ -508,8 +501,6 @@
         document.getElementById('listingForm').reset();
         uploadedBase64Image = null;
         document.getElementById('imagePreviewContainer').classList.add('hidden');
-        document.getElementById('addressSuggestions').classList.add('hidden');
-        onDistrictChange();
         closePostModal();
         loadListings();
       } catch (err) {
