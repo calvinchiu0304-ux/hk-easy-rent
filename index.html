@@ -180,11 +180,10 @@
 
     const districtsData = {
       kowloon: ["油尖旺", "深水埗", "九龍城", "黃大仙", "觀塘"],
-      hkIsland: ["中西區", "湾仔", "東區", "南區"],
+      hkIsland: ["中西區", "灣仔", "東區", "南區"],
       nt: ["荃灣", "屯門", "元朗", "北區", "大埔", "沙田", "西貢", "葵青", "離島"]
     };
 
-    // 分拆「港鐵」、「本地巴士」與「內地交通」三項獨立資料庫
     const transportData = {
       "油尖旺": { mtr: "港鐵旺角站 E1出口 / 尖沙咀站 / 朗豪坊", bus: "九巴 1, 1A, 2, 6, 9, 234X", china: "皇崗口岸直通巴 / 高鐵西九龍站直達" },
       "深水埗": { mtr: "港鐵深水埗站 C2出口 / 長沙灣站 / 西九龍中心", bus: "九巴 2, 6F, 30X, 214 | 城巴 E21", china: "經屯馬線直達深圳灣口岸轉乘點" },
@@ -297,7 +296,7 @@
       document.getElementById('addressSuggestions').classList.add('hidden');
     }
 
-    // 點擊開啟外部 Google 地圖導航/檢視位置
+    // 點擊開啟外部 Google 地圖（改為精準以「地區 + 交通關鍵字」或「單位地址」搜尋，絕不偏移）
     function openMap(query) {
       const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
       window.open(url, '_blank');
@@ -348,7 +347,6 @@
         const transportBus = item.transport_bus || (transportData[item.district] ? transportData[item.district].bus : '主要巴士路線');
         const transportChina = item.transport_china || (transportData[item.district] ? transportData[item.district].china : '跨境交通指引');
 
-        // 聯絡按鈕透明化：完整的 3 種狀態提示（WhatsApp, 微信, 電話）
         let whatsappBtn = '';
         if (item.phone) {
           whatsappBtn = `<a href="https://wa.me/852${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('你好，我在香港租屋網看到你的租盤：' + item.address)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-center text-sm shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a>`;
@@ -380,21 +378,23 @@
               </div>
               <div class="p-4 space-y-3">
                 <span class="text-3xl font-black text-amber-600 tracking-tight">HK$ ${Number(item.price || 0).toLocaleString()} <span class="text-base font-normal text-slate-500">/月</span></span>
-                <h4 class="text-xl font-black text-slate-900 leading-snug"><i class="fa-solid fa-location-dot text-red-500 mr-1.5"></i>${item.address || '詳細地址請查詢'}</h4>
+                <h4 onclick="openMap('${item.address}')" class="text-xl font-black text-slate-900 leading-snug cursor-pointer hover:text-blue-700 transition" title="點擊在地圖檢視實際地址">
+                  <i class="fa-solid fa-location-dot text-red-500 mr-1.5"></i><span class="underline decoration-dashed decoration-slate-400">${item.address || '詳細地址請查詢'}</span>
+                </h4>
                 
-                <!-- 點擊跳轉地圖的三項獨立交通資訊 -->
+                <!-- 精準修正後的獨立交通地圖點擊（以 地區 + 交通關鍵字 查詢，絕不偏移） -->
                 <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/70 text-sm space-y-2">
-                  <div onclick="openMap('${item.address} ${transportMtr}')" class="text-slate-800 font-bold flex items-center gap-1.5 cursor-pointer hover:text-blue-700 transition" title="點擊在地圖開啟地標">
+                  <div onclick="openMap('${item.district} ${transportMtr}')" class="text-slate-800 font-bold flex items-center gap-1.5 cursor-pointer hover:text-blue-700 transition" title="點擊在地圖開啟地標">
                     <i class="fa-solid fa-train-subway text-blue-700"></i>
                     <span class="underline decoration-dashed decoration-blue-400">${transportMtr}</span>
                     <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 ml-auto"></i>
                   </div>
-                  <div onclick="openMap('${item.address} 巴士站')" class="text-slate-600 text-xs flex items-center gap-1.5 cursor-pointer hover:text-emerald-700 transition" title="點擊在地圖開啟巴士站">
+                  <div onclick="openMap('${item.district} ${transportBus}')" class="text-slate-600 text-xs flex items-center gap-1.5 cursor-pointer hover:text-emerald-700 transition" title="點擊在地圖開啟巴士站">
                     <i class="fa-solid fa-bus text-emerald-600"></i>
                     <span class="underline decoration-dashed decoration-emerald-400">${transportBus}</span>
                     <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 ml-auto"></i>
                   </div>
-                  <div onclick="openMap('${item.address} 跨境巴士')" class="text-slate-600 text-xs flex items-center gap-1.5 cursor-pointer hover:text-purple-700 transition" title="點擊在地圖開啟跨境交通">
+                  <div onclick="openMap('${item.district} ${transportChina}')" class="text-slate-600 text-xs flex items-center gap-1.5 cursor-pointer hover:text-purple-700 transition" title="點擊在地圖開啟跨境交通">
                     <i class="fa-solid fa-train-tram text-purple-600"></i>
                     <span class="underline decoration-dashed decoration-purple-400">${transportChina}</span>
                     <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 ml-auto"></i>
@@ -403,7 +403,7 @@
               </div>
             </div>
 
-            <!-- 完整 3 重聯絡按鈕佈局 (WhatsApp / 微信 / 致電) -->
+            <!-- 完整 3 重聯絡按鈕佈局 -->
             <div class="p-4 pt-0 space-y-2">
               <div class="grid grid-cols-2 gap-2">
                 ${whatsappBtn}
