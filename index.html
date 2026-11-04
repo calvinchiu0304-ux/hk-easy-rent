@@ -22,9 +22,9 @@
     </div>
 
     <script>
-        // Supabase 設定參數
-        const SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_IXkN9Thl9EjlyVFEoNaP2w_4eCNP8Xr";
+        // 使用 var 宣告以徹底避免初始化衝突
+        var SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";
+        var SUPABASE_KEY = "sb_publishable_IXkN9Thl9EjlyVFEoNaP2w_4eCNP8Xr";
 
         async function testConnection() {
             const resultBox = document.getElementById('resultBox');
