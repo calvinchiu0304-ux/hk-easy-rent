@@ -200,7 +200,7 @@
       const container = document.getElementById('listingsContainer');
       container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-4xl mb-3"></i><p>載入中...</p></div>`;
 
-      let query = supabaseClient.from('listings').select('*').order('created_at', { ascending: false });
+      let query = supabaseClient.from('hk_rent_listings').select('*').order('created_at', { ascending: false });
       if (currentDistrictFilter !== 'ALL') {
         query = query.eq('district', currentDistrictFilter);
       }
@@ -260,7 +260,7 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = e => {
-          uploadedBase64Image = e.target.result; // 直接轉為字串，繞過 Storage 桶上傳
+          uploadedBase64Image = e.target.result;
           document.getElementById('imagePreview').src = uploadedBase64Image;
           document.getElementById('imagePreviewContainer').classList.remove('hidden');
         };
@@ -298,7 +298,7 @@
           transport_bus: transportInfo.bus
         };
 
-        const { error: insertError } = await supabaseClient.from('listings').insert([newListing]);
+        const { error: insertError } = await supabaseClient.from('hk_rent_listings').insert([newListing]);
         if (insertError) throw insertError;
 
         alert("🎉 租盤發布成功！全網用戶現已可瀏覽。");
