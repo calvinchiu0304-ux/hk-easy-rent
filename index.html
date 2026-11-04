@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>全球智慧租屋網 - 全街道即時連動版</title>
-  <!-- Tailwind CSS CDN -->
+  <title>全球智慧租屋網 - 正式結構化版</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome 圖示庫 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-size: 22px; }
@@ -17,13 +15,11 @@
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col font-size-lg" id="appBody">
 
-  <!-- 頂部導覽列 -->
   <header class="bg-blue-800 text-white p-4 shadow-lg sticky top-0 z-50 border-b border-blue-900">
     <div class="max-w-4xl mx-auto flex justify-between items-center">
       <h1 class="text-2xl md:text-3xl font-black tracking-wide cursor-pointer flex items-center gap-2 hover:opacity-95 transition" onclick="filterByDistrict('ALL')">
         <span>🌍</span> 全球智慧租屋網
       </h1>
-      <!-- 字體大小切換 -->
       <div class="flex items-center space-x-1 bg-blue-900/80 p-1 rounded-xl text-sm border border-blue-700/50">
         <span class="px-2 text-blue-200 font-bold">字體:</span>
         <button onclick="changeFontSize('md')" id="btn-md" class="px-2.5 py-1 rounded-lg font-bold hover:bg-blue-700 transition">中</button>
@@ -34,15 +30,13 @@
   </header>
 
   <main class="max-w-4xl mx-auto w-full p-3 md:p-6 flex-grow space-y-6">
-    <!-- 主行動呼籲：業主放盤按鈕 -->
     <div class="flex flex-col sm:flex-row gap-3">
       <button onclick="openPostModal()" class="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-4 px-6 rounded-2xl shadow-md hover:shadow-lg text-xl flex items-center justify-center space-x-2 border-2 border-amber-300 active:scale-95 transition">
         <i class="fa-solid fa-circle-plus text-2xl"></i>
-        <span>我要免費放盤 (全街道智能連動版)</span>
+        <span>我要免費放盤 (欄位隔離修正版)</span>
       </button>
     </div>
 
-    <!-- 區域選擇選單 -->
     <section class="bg-white p-4 rounded-3xl shadow-sm border border-slate-200/80 space-y-3">
       <div class="flex justify-between items-center border-b border-slate-100 pb-2.5">
         <h2 class="text-xl font-black text-blue-900 flex items-center"><i class="fa-solid fa-location-dot text-blue-600 mr-2"></i>選擇區域 / 城市</h2>
@@ -64,13 +58,11 @@
       </div>
     </section>
 
-    <!-- 租盤標題與計數 -->
     <div class="flex justify-between items-end border-b-2 border-slate-300/80 pb-2 px-1">
       <h3 class="text-xl font-black text-slate-900" id="currentFilterText">所有最新租盤</h3>
       <span class="text-slate-500 font-bold" id="listingCount">共 0 個租盤</span>
     </div>
 
-    <!-- 租盤列表容器 -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="listingsContainer">
       <div class="col-span-full text-center py-12 text-slate-400">
         <i class="fa-solid fa-spinner fa-spin text-4xl mb-3 text-blue-600"></i>
@@ -85,26 +77,10 @@
       <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-3xl font-black px-3 py-1">✕</button>
 
       <h2 class="text-2xl font-black text-blue-900 mb-1"><i class="fa-solid fa-house-medical mr-2 text-amber-500"></i>免費業主放盤</h2>
-      <p class="text-slate-500 text-sm">輸入任何街道（如弼街、西洋菜街、廣東道等），系統將即時精準匹配交通。</p>
-
-      <!-- 即時預覽區 -->
-      <div class="bg-blue-50/80 p-3.5 rounded-2xl border-2 border-dashed border-blue-300 space-y-2">
-        <span class="text-xs font-black text-blue-900 block tracking-wider uppercase">✨ 發布效果即時預覽 (WYSIWYG)</span>
-        <div class="bg-white p-3 rounded-xl border border-blue-200 shadow-sm space-y-2">
-          <div class="flex justify-between items-center">
-            <span id="previewPrice" class="text-2xl font-black text-amber-600">HK$ 0 <span class="text-xs font-normal text-slate-500">/月</span></span>
-            <span id="previewDistrict" class="bg-blue-800 text-white font-bold px-2 py-0.5 rounded-lg text-xs">分區</span>
-          </div>
-          <div class="text-base font-black text-slate-900 flex items-center gap-1.5">
-            <i class="fa-solid fa-location-dot text-red-500"></i>
-            <span id="previewAddress">大廈名稱 | 街道門牌</span>
-          </div>
-        </div>
-      </div>
+      <p class="text-slate-500 text-sm">請正確填寫各項獨立欄位，系統已全面防範資料錯位。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
         
-        <!-- 相片上傳區塊 -->
         <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2">
           <label class="block font-black text-slate-800 text-sm">1. 上傳單位相片 (選填)</label>
           <input type="file" id="imageFileInput" accept="image/*" onchange="previewSelectedImage(event)" class="w-full text-sm text-slate-500 file:mr-3 file:py-2 px-3 file:rounded-xl file:border-0 file:text-sm file:font-black file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 cursor-pointer">
@@ -115,35 +91,30 @@
 
         <div>
           <label class="block font-black text-slate-800 mb-1">2. 每月租金 (HKD)</label>
-          <input type="number" id="priceInput" oninput="updatePreview()" required placeholder="例如：12000" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl font-bold focus:border-blue-600 outline-none">
+          <input type="number" id="priceInput" required placeholder="例如：12000" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl font-bold focus:border-blue-600 outline-none">
         </div>
 
-        <!-- 獨立結構化地址欄位 -->
         <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-          <span class="block font-black text-blue-950 text-sm">3. 地址與大廈名稱 (全街道即時智能連動)</span>
+          <span class="block font-black text-blue-950 text-sm">3. 地址結構 (獨立隔離)</span>
           
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">🏢 大廈 / 屋苑名稱</label>
-            <input type="text" id="buildingNameInput" oninput="onAddressInputTyped()" required placeholder="例如：旺角中心 / 國康大樓" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
+            <input type="text" id="buildingNameInput" oninput="onAddressInputTyped()" required placeholder="例如：國康大樓 / 旺角中心" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">📍 詳細街道與門牌</label>
-            <input type="text" id="streetAddressInput" oninput="onAddressInputTyped()" required placeholder="例如：弼街62號 / 西洋菜南街65號" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
+            <input type="text" id="streetAddressInput" oninput="onAddressInputTyped()" required placeholder="例如：廣東道995號 / 弼街62號" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
           </div>
         </div>
 
         <div>
           <label class="block font-black text-slate-800 mb-1">4. 選擇區域 / 城市</label>
-          <select id="districtInput" onchange="onDistrictChange(); updatePreview();" required class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold bg-white focus:border-blue-600 outline-none"></select>
+          <select id="districtInput" onchange="onDistrictChange()" required class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold bg-white focus:border-blue-600 outline-none"></select>
         </div>
 
-        <!-- 即時動態匹配的交通欄位 -->
         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-300/80 space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="block font-black text-slate-800 text-sm">5. 交通指南 (輸入街道即時變更，可自由編輯)</span>
-            <span id="transportMatchStatus" class="text-xs font-bold text-purple-700">⚡ 智能街道連動中</span>
-          </div>
+          <span class="block font-black text-slate-800 text-sm">5. 交通指南 (可自由編輯微調)</span>
           <div>
             <label class="text-xs font-bold text-slate-600">🚇 主要鐵路 / 地鐵站</label>
             <input type="text" id="transportMtrInput" class="w-full p-2 border rounded-xl text-sm font-bold bg-white outline-none focus:border-blue-600">
@@ -171,16 +142,15 @@
         </div>
 
         <button type="submit" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-2xl text-xl shadow-lg active:scale-95 transition">
-          🚀 確認無誤，即時發布
+          🚀 確認發布單位
         </button>
       </form>
     </div>
   </div>
 
-  <!-- 頁尾 Footer -->
   <footer class="bg-slate-900 text-slate-300 p-6 text-center text-base mt-auto space-y-1.5 border-t border-slate-800">
     <p class="font-bold">🌍 全球智慧租屋網 &copy; 2026</p>
-    <p class="text-xs text-slate-400">本平台採用全街道智能連動與結構化真實數據標準。</p>
+    <p class="text-xs text-slate-400">本平台採用欄位隔離與標準結構化資料標準。</p>
   </footer>
 
   <script>
@@ -193,55 +163,9 @@
       nt: ["荃灣", "屯門", "元朗", "北區", "大埔", "沙田", "西貢", "葵青", "布達佩斯 (海外)"]
     };
 
-    // 💡 擴充版：全港核心街道與地標智能匹配庫（包含弼街、西洋菜街、彌敦道、廣東道等）
-    const keywordTransportRules = [
-      {
-        keywords: ["弼街", "太子", "西洋菜北", "通菜街北", "界限街", "花園街北"],
-        district: "油尖旺",
-        mtr: "港鐵太子站 B2 / C2出口 (步行2分鐘)",
-        bus: "九巴 6, 6C, 30X, 234X | 城巴 E21",
-        china: "太子鴉蘭街跨境直通巴總站"
-      },
-      {
-        keywords: ["西洋菜", "旺角中心", "亞皆老街", "通菜街", "花園街", "彌敦道旺角", "奶路臣街"],
-        district: "油尖旺",
-        mtr: "港鐵旺角站 D2 / B2出口 (步行1分鐘)",
-        bus: "九巴 1A, 2, 6, 9, 24A, 104",
-        china: "旺角跨境巴士總站直達皇崗/深圳灣"
-      },
-      {
-        keywords: ["廣東道", "海港城", "港景豪庭", "港景峯", "中港城", "柯士甸", "佐敦道"],
-        district: "油尖旺",
-        mtr: "港鐵尖沙咀站 A1出口 / 佐敦站 C出口",
-        bus: "九巴 3C, 12, 14, 238X",
-        china: "中港城跨境客運碼頭 / 高鐵西九龍站直達"
-      },
-      {
-        keywords: ["荔枝角道", "福利街", "港灣豪庭", "大角咀", "南昌", "通州街"],
-        district: "深水埗",
-        mtr: "港鐵太子站 C2出口 / 港鐵南昌站 D1出口",
-        bus: "九巴 2, 6F, 12, 214 | 城巴 E21",
-        china: "經屯馬線直達深圳灣口岸轉乘點"
-      },
-      {
-        keywords: ["彌敦道尖沙咀", "the one", "美麗華", "K11", "堪富利士道", "海防道"],
-        district: "油尖旺",
-        mtr: "港鐵尖沙咀站 B1/B2出口",
-        bus: "九巴 1, 1A, 2, 6, 7, 9",
-        china: "高鐵西九龍站 10 分鐘車程"
-      },
-      {
-        keywords: ["budapest", "布達佩斯", "andrassy"],
-        district: "布達佩斯 (海外)",
-        mtr: "地鐵 M1 線 (Octogon / Deák Ferenc tér 站)",
-        bus: "市中心 46/47/49 號有軌電車",
-        china: "李斯特費倫茨國際機場直達巴士 100E"
-      }
-    ];
-
     const defaultDistrictTransport = {
-      "油尖旺": { mtr: "港鐵旺角站 / 尖沙咀站", bus: "九巴 1, 1A, 2, 6", china: "高鐵西九龍站直達" },
-      "深水埗": { mtr: "港鐵深水埗站 / 長沙灣站", bus: "九巴 2, 6F, 30X", china: "經屯馬線直達深圳灣" },
+      "油尖旺": { mtr: "港鐵旺角站 / 尖沙咀站 / 佐敦站", bus: "九巴 1, 1A, 2, 6, 9", china: "高鐵西九龍站直達" },
+      "深水埗": { mtr: "港鐵深水埗站 / 長沙灣站 / 太子站", bus: "九巴 2, 6F, 30X, 214", china: "經屯馬線直達深圳灣" },
       "九龍城": { mtr: "港鐵宋皇臺站 / 土瓜灣站", bus: "九巴 1A, 2A, 11X", china: "直達跨境巴總站" },
       "黃大仙": { mtr: "港鐵黃大仙站 / 鑽石山站", bus: "九巴 2F, 3C, 11", china: "鑽石山高鐵接駁專線" },
       "觀塘": { mtr: "港鐵觀塘站 / 牛頭角站", bus: "九巴 1A, 14, 16", china: "觀塘跨境直通巴總站" },
@@ -296,33 +220,36 @@
       onDistrictChange();
     }
 
-    // 💡 升級版：打字即時動態連動交通（支援弼街等全港街道）
     function onAddressInputTyped() {
-      updatePreview();
-
       const buildingText = document.getElementById('buildingNameInput').value.toLowerCase();
       const streetText = document.getElementById('streetAddressInput').value.toLowerCase();
       const fullText = buildingText + " " + streetText;
 
-      let matchedRule = null;
-      for (let rule of keywordTransportRules) {
-        if (rule.keywords.some(kw => fullText.includes(kw))) {
-          matchedRule = rule;
-          break;
-        }
-      }
+      const numberMatch = fullText.match(/\d+/);
+      const streetNum = numberMatch ? parseInt(numberMatch[0]) : 0;
 
-      if (matchedRule) {
-        document.getElementById('transportMtrInput').value = matchedRule.mtr;
-        document.getElementById('transportBusInput').value = matchedRule.bus;
-        document.getElementById('transportChinaInput').value = matchedRule.china;
-        document.getElementById('districtInput').value = matchedRule.district;
-        document.getElementById('transportMatchStatus').innerText = "⚡ 已精準連動街道交通";
-        document.getElementById('transportMatchStatus').className = "text-xs font-bold text-purple-700";
-      } else {
-        onDistrictChange();
-        document.getElementById('transportMatchStatus').innerText = "⚡ 區域預載交通";
-        document.getElementById('transportMatchStatus').className = "text-xs font-bold text-emerald-600";
+      if (fullText.includes("廣東道")) {
+        if (streetNum >= 800) {
+          document.getElementById('transportMtrInput').value = "港鐵奧運站 D1出口 / 旺角站 C出口";
+          document.getElementById('transportBusInput').value = "九巴 12, 31B, 914 | 城巴 E21";
+          document.getElementById('districtInput').value = "油尖旺";
+        } else if (streetNum >= 400) {
+          document.getElementById('transportMtrInput').value = "港鐵佐敦站 C出口 / 柯士甸站";
+          document.getElementById('transportBusInput').value = "九巴 14, 36X, 268B";
+          document.getElementById('districtInput').value = "油尖旺";
+        } else if (streetNum > 0) {
+          document.getElementById('transportMtrInput').value = "港鐵尖沙咀站 A1出口";
+          document.getElementById('transportBusInput').value = "九巴 1, 1A, 2, 6";
+          document.getElementById('districtInput').value = "油尖旺";
+        }
+      } else if (fullText.includes("弼街")) {
+        document.getElementById('transportMtrInput').value = "港鐵太子站 B2 / C2出口";
+        document.getElementById('transportBusInput').value = "九巴 6, 6C, 30X, 234X";
+        document.getElementById('districtInput').value = "油尖旺";
+      } else if (fullText.includes("西洋菜") || fullText.includes("旺角中心")) {
+        document.getElementById('transportMtrInput').value = "港鐵旺角站 D2 / B2出口";
+        document.getElementById('transportBusInput').value = "九巴 1A, 2, 6, 9";
+        document.getElementById('districtInput').value = "油尖旺";
       }
     }
 
@@ -332,20 +259,6 @@
       document.getElementById('transportMtrInput').value = info.mtr;
       document.getElementById('transportBusInput').value = info.bus;
       document.getElementById('transportChinaInput').value = info.china;
-    }
-
-    function updatePreview() {
-      const price = document.getElementById('priceInput').value.trim();
-      const building = document.getElementById('buildingNameInput').value.trim();
-      const street = document.getElementById('streetAddressInput').value.trim();
-      const district = document.getElementById('districtInput').value;
-
-      document.getElementById('previewPrice').innerHTML = price ? `HK$ ${Number(price).toLocaleString()} <span class="text-xs font-normal text-slate-500">/月</span>` : `HK$ 0 <span class="text-xs font-normal text-slate-500">/月</span>`;
-      document.getElementById('previewDistrict').innerText = district || '區域';
-      
-      const buildingText = building || '大廈名稱';
-      const streetText = street || '街道門牌';
-      document.getElementById('previewAddress').innerText = `${buildingText} | ${streetText}`;
     }
 
     function previewSelectedImage(event) {
@@ -388,6 +301,7 @@
       }
     }
 
+    // 💡 關鍵：精準結構化渲染，絕不拼接租金與地址！
     function renderListings() {
       const container = document.getElementById('listingsContainer');
       let data = allListings;
@@ -411,9 +325,18 @@
         const transportBus = item.transport_bus || '多條公車路線';
         const transportChina = item.transport_china || '交通便利';
 
-        const buildingDisplay = item.building_name ? `<span class="text-blue-900 font-black">${item.building_name}</span>` : '';
-        const streetDisplay = item.street_address ? `<span class="text-slate-700">${item.street_address}</span>` : (item.address || '');
-        const fullMapQuery = `${item.building_name || ''} ${item.street_address || item.address || ''}`;
+        // 嚴格讀取結構化欄位，絕不包含價格變數
+        const buildingText = item.building_name ? item.building_name.trim() : '';
+        const streetText = item.street_address ? item.street_address.trim() : (item.address || '').trim();
+        
+        let displayLocationText = "";
+        if (buildingText && streetText) {
+          displayLocationText = `${buildingText} (${streetText})`;
+        } else {
+          displayLocationText = buildingText || streetText || "詳細地址";
+        }
+
+        const mapQueryText = `${buildingText} ${streetText}`;
 
         let whatsappBtn = item.phone ? `<a href="https://wa.me/852${item.phone.replace(/[^0-9]/g, '')}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-center text-sm shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a>` : `<div class="bg-slate-100 text-slate-400 font-bold py-3 rounded-xl text-center text-xs border flex items-center justify-center gap-1 cursor-not-allowed">無WhatsApp</div>`;
         
@@ -432,9 +355,9 @@
               <div class="p-4 space-y-3">
                 <span class="text-3xl font-black text-amber-600 tracking-tight">HK$ ${Number(item.price || 0).toLocaleString()} <span class="text-base font-normal text-slate-500">/月</span></span>
                 
-                <h4 onclick="openMap('${fullMapQuery}')" class="text-lg font-black text-slate-900 leading-snug cursor-pointer hover:text-blue-700 transition" title="點擊在地圖檢視實際地址">
+                <h4 onclick="openMap('${mapQueryText}')" class="text-lg font-black text-slate-900 leading-snug cursor-pointer hover:text-blue-700 transition" title="點擊在地圖檢視實際地址">
                   <i class="fa-solid fa-location-dot text-red-500 mr-1.5"></i>
-                  ${buildingDisplay} <span class="text-slate-400 font-normal">|</span> ${streetDisplay}
+                  <span>${displayLocationText}</span>
                 </h4>
                 
                 <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/70 text-sm space-y-2">
@@ -462,10 +385,7 @@
       renderListings();
     }
 
-    function openPostModal() { 
-      document.getElementById('postModal').classList.remove('hidden'); 
-      updatePreview();
-    }
+    function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
     function closePostModal() { document.getElementById('postModal').classList.add('hidden'); }
 
     async function handleFormSubmit(event) {
@@ -480,15 +400,15 @@
         const streetAddressVal = document.getElementById('streetAddressInput').value.trim();
         const priceVal = Number(document.getElementById('priceInput').value);
 
-        if (!priceVal || priceVal <= 0) throw new Error("請輸入有效的每月租金金額");
-        if (!buildingNameVal) throw new Error("請輸入大廈或屋苑名稱");
-        if (!streetAddressVal) throw new Error("請輸入詳細街道與門牌");
+        if (!priceVal || priceVal <= 0) throw new Error("請輸入有效的金額");
+        if (!buildingNameVal) throw new Error("請輸入大廈名稱");
 
+        // 寫入資料庫：嚴格對應欄位，絕不將價格寫入 address
         const newListing = {
           district: districtVal,
           building_name: buildingNameVal,
           street_address: streetAddressVal,
-          address: `${buildingNameVal} | ${streetAddressVal}`, 
+          address: streetAddressVal ? `${buildingNameVal} (${streetAddressVal})` : buildingNameVal, 
           price: priceVal,
           image_url: uploadedBase64Image,
           phone: document.getElementById('phoneInput').value || null,
@@ -514,7 +434,7 @@
           throw new Error(errData.message || `HTTP ${response.status}`);
         }
 
-        alert("🎉 租盤發布成功！街道與交通資訊完美即時連動。");
+        alert("🎉 租盤發布成功！數據結構完全正確。");
         document.getElementById('listingForm').reset();
         uploadedBase64Image = null;
         document.getElementById('imagePreviewContainer').classList.add('hidden');
@@ -525,7 +445,7 @@
         alert("發布失敗：" + err.message);
       } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "🚀 確認無誤，即時發布";
+        submitBtn.innerText = "🚀 確認發布單位";
       }
     }
 
