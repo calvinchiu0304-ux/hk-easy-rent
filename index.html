@@ -8,8 +8,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body { font-size: 18px; }
     .font-size-sm { font-size: 16px; }
@@ -137,11 +135,8 @@
   </footer>
 
   <script>
-    const SUPABASE_URL = "https://bvoqwjtvhlpm.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2b3F3anR2aGxwbSIsInJvbGUiOiJhbmpuIiwiaWF0IjoxNzYzMjY1NDgwLCJleHAiOjIxMDg4NDE0ODB9.dummy_key_to_force_refresh"; // 標準認證金鑰
-    
-    // 使用 fetch 獨立封裝，防止 SDK 卡死
-    const supabaseClient = supabase.createClient(SUPABASE_URL, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2b3F3anR2aGxwbSIsInJvbGUiOiJhbmpuIiwiaWF0IjoxNzkzMjY1NDgwLCJleHAiOjIxMDg4NDE0ODB9.dummy_key_to_force_refresh");
+    const SUPABASE_URL = "https://dzfyweiypnho.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_n0WSNbDtaIKxRo1B6mUPzg_AE-ab2me";
 
     const districtsData = {
       kowloon: ["油尖旺", "深水埗", "九龍城", "黃大仙", "觀塘"],
@@ -210,16 +205,13 @@
 
         const res = await fetch(fetchUrl, {
           headers: {
-            "apikey": "sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571",
-            "Authorization": "Bearer sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571"
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`
           }
         });
 
         const data = await res.json();
-        
-        if (!Array.isArray(data)) {
-          throw new Error("Data format error");
-        }
+        if (!Array.isArray(data)) throw new Error("Data format error");
 
         document.getElementById('listingCount').innerText = `共 ${data.length} 個租盤`;
         document.getElementById('currentFilterText').innerText = currentDistrictFilter === 'ALL' ? '所有最新租盤' : `${currentDistrictFilter}區 租盤`;
@@ -315,8 +307,8 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "apikey": "sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571",
-            "Authorization": "Bearer sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571",
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
             "Prefer": "return=minimal"
           },
           body: JSON.stringify(newListing)
