@@ -6,47 +6,244 @@
     <title>香港簡單租屋網</title>
     <!-- 引入 Tailwind CSS 樣式 -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .font-size-sm { font-size: 14px; }
+        .font-size-base { font-size: 16px; }
+        .font-size-lg { font-size: 18px; }
+        .font-size-xl { font-size: 20px; }
+    </style>
 </head>
-<body class="bg-slate-100 p-6 font-sans">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md space-y-4 text-center">
-        <h1 class="text-2xl font-bold text-blue-700">🏠 香港簡單租屋網</h1>
-        <p class="text-slate-600 text-sm">單一檔案整合介面 - 資料庫連線測試</p>
-        
-        <button onclick="testConnection()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow hover:bg-blue-700 transition">
-            立即測試資料庫連線
-        </button>
-        
-        <div id="resultBox" class="bg-slate-50 p-4 rounded-xl text-left text-xs font-mono border overflow-x-auto max-h-60">
-            等待測試點擊...
+<body id="appBody" class="bg-slate-100 font-sans min-h-screen font-size-base text-slate-800 flex flex-col">
+
+    <!-- 頂部導覽列 -->
+    <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-50">
+        <div class="max-w-xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <span>🏠</span> 香港簡單租屋網
+            </h1>
+            <!-- 字體大小調整按鈕 -->
+            <div class="flex items-center gap-1 text-xs bg-blue-700 p-1 rounded-lg">
+                <span class="px-1 text-blue-200">字體:</span>
+                <button onclick="setFontSize('sm')" id="btn-sm" class="px-2 py-0.5 rounded font-bold hover:bg-blue-800">中</button>
+                <button onclick="setFontSize('base')" id="btn-base" class="px-2 py-0.5 rounded font-bold bg-white text-blue-700">大</button>
+                <button onclick="setFontSize('lg')" id="btn-lg" class="px-2 py-0.5 rounded font-bold hover:bg-blue-800">特大</button>
+            </div>
         </div>
-    </div>
+    </header>
+
+    <main class="max-w-xl mx-auto w-full p-4 flex-1 space-y-4">
+        
+        <!-- 區域選擇面板 -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h2 class="font-bold text-blue-800 flex items-center gap-1">
+                    <span>📍</span> 選擇香港區域
+                </h2>
+                <button onclick="filterDistrict('全部')" id="btn-district-全部" class="text-sm text-blue-600 hover:underline font-bold">
+                    顯示全部
+                </button>
+            </div>
+
+            <!-- 九龍區 -->
+            <div class="space-y-1">
+                <div class="text-xs font-bold text-slate-400">九龍區</div>
+                <div class="flex flex-wrap gap-1.5">
+                    <button onclick="filterDistrict('油尖旺')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="油尖旺">油尖旺</button>
+                    <button onclick="filterDistrict('深水埗')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="深水埗">深水埗</button>
+                    <button onclick="filterDistrict('九龍城')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="九龍城">九龍城</button>
+                    <button onclick="filterDistrict('黃大仙')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="黃大仙">黃大仙</button>
+                    <button onclick="filterDistrict('觀塘')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="觀塘">觀塘</button>
+                </div>
+            </div>
+
+            <!-- 港島區 -->
+            <div class="space-y-1">
+                <div class="text-xs font-bold text-slate-400">港島區</div>
+                <div class="flex flex-wrap gap-1.5">
+                    <button onclick="filterDistrict('中西區')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="中西區">中西區</button>
+                    <button onclick="filterDistrict('灣仔')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="灣仔">灣仔</button>
+                    <button onclick="filterDistrict('東區')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="東區">東區</button>
+                    <button onclick="filterDistrict('南區')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="南區">南區</button>
+                </div>
+            </div>
+
+            <!-- 新界區 -->
+            <div class="space-y-1">
+                <div class="text-xs font-bold text-slate-400">新界區</div>
+                <div class="flex flex-wrap gap-1.5">
+                    <button onclick="filterDistrict('荃灣')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="荃灣">荃灣</button>
+                    <button onclick="filterDistrict('屯門')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="屯門">屯門</button>
+                    <button onclick="filterDistrict('元朗')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="元朗">元朗</button>
+                    <button onclick="filterDistrict('北區')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="北區">北區</button>
+                    <button onclick="filterDistrict('大埔')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="大埔">大埔</button>
+                    <button onclick="filterDistrict('沙田')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="沙田">沙田</button>
+                    <button onclick="filterDistrict('西貢')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="西貢">西貢</button>
+                    <button onclick="filterDistrict('葵青')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="葵青">葵青</button>
+                    <button onclick="filterDistrict('離島')" class="district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition" data-district="離島">離島</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 租盤列表標題欄 -->
+        <div class="flex justify-between items-center px-1">
+            <h2 class="font-bold text-lg text-slate-700" id="listTitle">所有最新租盤</h2>
+            <span class="text-sm text-slate-500" id="rentalCount">載入中...</span>
+        </div>
+
+        <!-- 租盤卡片展示區 -->
+        <div id="listingsContainer" class="space-y-3">
+            <div class="bg-white p-8 rounded-2xl text-center text-slate-400 shadow-sm border">
+                資料載入中，請稍候...
+            </div>
+        </div>
+    </main>
+
+    <!-- 頁尾宣告 -->
+    <footer class="bg-slate-800 text-slate-300 text-center p-4 text-xs space-y-1">
+        <div class="font-semibold">🏠 香港極簡免登記租屋網 © 2026</div>
+        <div class="text-slate-400">本平台所有盤源維護 30 天有效期，免手續費免登記。</div>
+    </footer>
 
     <script>
-        // 使用 var 宣告以徹底避免初始化衝突
         var SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";
         var SUPABASE_KEY = "sb_publishable_IXkN9Thl9EjlyVFEoNaP2w_4eCNP8Xr";
 
-        async function testConnection() {
-            const resultBox = document.getElementById('resultBox');
-            resultBox.innerHTML = "正在連線查詢資料庫...";
-            
+        var allListings = [];
+        var currentDistrict = "全部";
+
+        window.onload = function() {
+            fetchListings();
+        };
+
+        async function fetchListings() {
+            const container = document.getElementById('listingsContainer');
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*&order=created_at.desc`, {
                     headers: {
                         'apikey': SUPABASE_KEY,
                         'Authorization': `Bearer ${SUPABASE_KEY}`
                     }
                 });
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    resultBox.innerHTML = `<span style="color: red;">❌ 查詢失敗 (HTTP ${response.status})：<br>${JSON.stringify(data, null, 2)}</span>`;
-                } else {
-                    resultBox.innerHTML = `<span style="color: green;">✅ 成功取得資料：<br>${JSON.stringify(data, null, 2)}</span>`;
-                }
+                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+                
+                allListings = await response.json();
+                renderListings();
             } catch (err) {
-                resultBox.innerHTML = `<span style="color: red;">❌ 發生異常錯誤：<br>${err.message}</span>`;
+                container.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl text-center text-red-500 shadow-sm border border-red-100 space-y-2">
+                        <div class="text-lg font-bold">無法載入租盤數據</div>
+                        <div class="text-xs text-slate-400">請重新整理頁面或稍後再試（${err.message}）</div>
+                    </div>`;
+                document.getElementById('rentalCount').innerText = "共 0 個租盤";
+            }
+        }
+
+        function renderListings() {
+            const container = document.getElementById('listingsContainer');
+            const countSpan = document.getElementById('rentalCount');
+            const listTitle = document.getElementById('listTitle');
+
+            let filtered = allListings;
+            if (currentDistrict !== "全部") {
+                filtered = allListings.filter(item => item.district === currentDistrict);
+                listTitle.innerText = `${currentDistrict} 最新租盤`;
+            } else {
+                listTitle.innerText = "所有最新租盤";
+            }
+
+            countSpan.innerText = `共 ${filtered.length} 個租盤`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl text-center text-slate-400 shadow-sm border">
+                        目前該區域暫無刊登的租盤資訊。
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => {
+                const price = item.price ? `$${Number(item.price).toLocaleString()} / 月` : "面議";
+                
+                // 港鐵與巴士提示支援
+                const mtrInfo = item.transport_mtr ? `
+                    <div class="flex items-center gap-1.5 text-xs text-slate-700 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                        <span class="font-bold text-red-600">🚇 港鐵：</span><span>${item.transport_mtr}</span>
+                    </div>` : '';
+
+                const busInfo = item.transport_bus ? `
+                    <div class="flex items-center gap-1.5 text-xs text-slate-700 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
+                        <span class="font-bold text-blue-600">🚌 巴士：</span><span>${item.transport_bus}</span>
+                    </div>` : '';
+
+                const phone = item.phone ? `<a href="tel:${item.phone}" class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-100 flex items-center gap-1">📞 ${item.phone}</a>` : '';
+                const whatsapp = item.phone ? `<a href="https://wa.me/852${item.phone}" target="_blank" class="bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-600 flex items-center gap-1">💬 WhatsApp</a>` : '';
+
+                return `
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition space-y-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-md font-bold">
+                                    ${item.district || '香港區'}
+                                </span>
+                                <h3 class="text-base font-bold text-slate-800 mt-1.5">${item.address || '詳細地址請查詢'}</h3>
+                            </div>
+                            <span class="text-lg font-extrabold text-blue-600">${price}</span>
+                        </div>
+                        
+                        ${item.image_url ? `<img src="${item.image_url}" class="w-full h-48 object-cover rounded-xl border">` : ''}
+
+                        <!-- 交通提示區塊 (港鐵出入口與巴士路線) -->
+                        ${(mtrInfo || busInfo) ? `
+                            <div class="space-y-1.5 pt-1">
+                                ${mtrInfo}
+                                ${busInfo}
+                            </div>
+                        ` : ''}
+
+                        <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100 items-center justify-between">
+                            <span class="text-xs text-slate-400">刊登時間：${new Date(item.created_at).toLocaleDateString()}</span>
+                            <div class="flex gap-2">
+                                ${phone}
+                                ${whatsapp}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterDistrict(district) {
+            currentDistrict = district;
+
+            document.querySelectorAll('.district-btn').forEach(btn => {
+                if (btn.getAttribute('data-district') === district) {
+                    btn.className = "district-btn bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm transition";
+                } else {
+                    btn.className = "district-btn bg-slate-100 hover:bg-blue-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium transition";
+                }
+            });
+
+            renderListings();
+        }
+
+        function setFontSize(size) {
+            const body = document.getElementById('appBody');
+            body.classList.remove('font-size-sm', 'font-size-base', 'font-size-lg');
+
+            document.getElementById('btn-sm').className = "px-2 py-0.5 rounded font-bold hover:bg-blue-800";
+            document.getElementById('btn-base').className = "px-2 py-0.5 rounded font-bold hover:bg-blue-800";
+            document.getElementById('btn-lg').className = "px-2 py-0.5 rounded font-bold hover:bg-blue-800";
+
+            if (size === 'sm') {
+                body.classList.add('font-size-sm');
+                document.getElementById('btn-sm').className = "px-2 py-0.5 rounded font-bold bg-white text-blue-700";
+            } else if (size === 'base') {
+                body.classList.add('font-size-base');
+                document.getElementById('btn-base').className = "px-2 py-0.5 rounded font-bold bg-white text-blue-700";
+            } else if (size === 'lg') {
+                body.classList.add('font-size-lg');
+                document.getElementById('btn-lg').className = "px-2 py-0.5 rounded font-bold bg-white text-blue-700";
             }
         }
     </script>
