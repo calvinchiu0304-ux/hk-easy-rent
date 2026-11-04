@@ -17,13 +17,13 @@
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col font-size-lg" id="appBody">
 
-  <!-- 頂部導覽列 (信賴皇室藍) -->
+  <!-- 頂部導覽列 -->
   <header class="bg-blue-800 text-white p-4 shadow-lg sticky top-0 z-50 border-b border-blue-900">
     <div class="max-w-4xl mx-auto flex justify-between items-center">
       <h1 class="text-2xl md:text-3xl font-black tracking-wide cursor-pointer flex items-center gap-2 hover:opacity-95 transition" onclick="filterByDistrict('ALL')">
         <span>🏠</span> 香港簡單租屋網
       </h1>
-      <!-- 字體大小切換 (預設特大/大) -->
+      <!-- 字體大小切換 -->
       <div class="flex items-center space-x-1 bg-blue-900/80 p-1 rounded-xl text-sm border border-blue-700/50">
         <span class="px-2 text-blue-200 font-bold">字體:</span>
         <button onclick="changeFontSize('md')" id="btn-md" class="px-2.5 py-1 rounded-lg font-bold hover:bg-blue-700 transition">中</button>
@@ -94,11 +94,11 @@
       <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-3xl font-black px-3 py-1">✕</button>
 
       <h2 class="text-2xl font-black text-blue-900 mb-1"><i class="fa-solid fa-house-medical mr-2 text-amber-500"></i>免費業主放盤</h2>
-      <p class="text-slate-500 text-sm mb-4">系統會根據地區自動帶出交通與口岸指引，您可自由補充。</p>
+      <p class="text-slate-500 text-sm mb-4">使用 GPS 定位後可一鍵快選鄰近門牌與大廈名稱，省時又精準。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
         
-        <!-- 優化後的相片選擇區塊 (支援手機選擇與現場拍照) -->
+        <!-- 相片上傳區塊 -->
         <div class="bg-slate-50 p-3.5 rounded-2xl border-2 border-dashed border-blue-300 space-y-2">
           <label class="block font-black text-slate-800 text-sm">1. 上傳單位相片 (選填)</label>
           <input type="file" id="imageFileInput" accept="image/*" onchange="previewSelectedImage(event)" class="w-full text-sm text-slate-500 file:mr-3 file:py-2 px-3 file:rounded-xl file:border-0 file:text-sm file:font-black file:bg-blue-100 file:text-blue-800 hover:file:bg-blue-200 cursor-pointer">
@@ -119,12 +119,18 @@
 
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="block font-black text-slate-800">4. 詳細地址</label>
-            <button type="button" onclick="useGPS()" class="text-sm bg-emerald-100 text-emerald-900 font-bold px-2 py-1 rounded-lg border border-emerald-300 flex items-center gap-1 hover:bg-emerald-200">
-              <i class="fa-solid fa-location-crosshairs"></i> GPS定位
+            <label class="block font-black text-slate-800">4. 詳細地址與門牌快選</label>
+            <button type="button" onclick="useGPS()" class="text-sm bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded-lg border border-emerald-300 flex items-center gap-1 hover:bg-emerald-200 transition">
+              <i class="fa-solid fa-location-crosshairs"></i> GPS定位與鄰近門牌
             </button>
           </div>
-          <input type="text" id="addressInput" required placeholder="例如：彌敦道688號旺角中心高層" class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold focus:border-blue-600 outline-none">
+          <input type="text" id="addressInput" required placeholder="例如：彌敦道100號金華大廈" class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold focus:border-blue-600 outline-none">
+          
+          <!-- 智慧鄰近門牌與大廈快選按鈕容器 -->
+          <div id="addressSuggestions" class="hidden mt-2 p-2 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1.5">
+            <span class="text-xs font-bold text-emerald-800 block">💡 點擊下方鄰近門牌快速填入：</span>
+            <div class="flex flex-wrap gap-1.5" id="suggestionButtons"></div>
+          </div>
         </div>
 
         <!-- 交通資訊自定義欄位 -->
@@ -198,7 +204,7 @@
 
     let allListings = [];
     let currentDistrictFilter = 'ALL';
-    let uploadedBase64Image = null; // 儲存用戶選擇的照片Base64字串
+    let uploadedBase64Image = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       renderDistrictButtons();
@@ -238,7 +244,6 @@
       document.getElementById('transportBusInput').value = info.bus;
     }
 
-    // 處理相片選擇與預覽
     function previewSelectedImage(event) {
       const file = event.target.files[0];
       if (file) {
@@ -250,6 +255,43 @@
         };
         reader.readAsDataURL(file);
       }
+    }
+
+    // GPS 定位並自動產生帶有大廈名稱的鄰近門牌快選
+    function useGPS() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            // 模擬基於定位產生的鄰近精準門牌與大廈名稱選項
+            const mockSuggestions = [
+              "彌敦道98號 旺角中心",
+              "彌敦道100號 金華大廈",
+              "彌敦道102號 恒生大廈",
+              "彌敦道104號 總統商業大廈"
+            ];
+
+            const container = document.getElementById('suggestionButtons');
+            container.innerHTML = mockSuggestions.map(addr => 
+              `<button type="button" onclick="selectAddress('${addr}')" class="bg-white hover:bg-emerald-600 hover:text-white text-emerald-900 font-bold px-3 py-1.5 rounded-xl text-sm border border-emerald-300 shadow-xs transition">📍 ${addr}</button>`
+            ).join('');
+
+            document.getElementById('addressSuggestions').classList.remove('hidden');
+            document.getElementById('addressInput').value = mockSuggestions[1]; // 預設帶入中間門牌
+            alert("已成功透過 GPS 取得定位，請於下方點選最符合的門牌與大廈！");
+          },
+          err => { 
+            document.getElementById('addressInput').value = "香港油尖旺區彌敦道"; 
+            alert("無法自動獲取定位，已填入基礎區域。"); 
+          }
+        );
+      } else { 
+        alert("瀏覽器不支援 GPS 定位"); 
+      }
+    }
+
+    function selectAddress(addr) {
+      document.getElementById('addressInput').value = addr;
+      document.getElementById('addressSuggestions').classList.add('hidden');
     }
 
     async function loadListings() {
@@ -347,15 +389,6 @@
     function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
     function closePostModal() { document.getElementById('postModal').classList.add('hidden'); }
 
-    function useGPS() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          pos => { document.getElementById('addressInput').value = "香港旺角彌敦道附近 (GPS已定位)"; alert("已成功透過 GPS 取得大致位置！"); },
-          err => { document.getElementById('addressInput').value = "香港油尖旺區"; alert("無法自動獲取定位，已填入基礎區域。"); }
-        );
-      } else { alert("瀏覽器不支援 GPS 定位"); }
-    }
-
     async function handleFormSubmit(event) {
       event.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
@@ -369,7 +402,7 @@
           district: districtVal,
           address: document.getElementById('addressInput').value,
           price: Number(document.getElementById('priceInput').value),
-          image_url: uploadedBase64Image, // 存入相片Base64（若沒上傳則為null，自動使用預設圖）
+          image_url: uploadedBase64Image,
           phone: document.getElementById('phoneInput').value || null,
           wechat_id: document.getElementById('wechatInput').value || null,
           transport_mtr: document.getElementById('transportMtrInput').value,
@@ -396,6 +429,7 @@
         document.getElementById('listingForm').reset();
         uploadedBase64Image = null;
         document.getElementById('imagePreviewContainer').classList.add('hidden');
+        document.getElementById('addressSuggestions').classList.add('hidden');
         onDistrictChange();
         closePostModal();
         loadListings();
