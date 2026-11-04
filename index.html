@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>香港簡單租屋網 - 測試版</title>
+    <title>香港簡單租屋網</title>
     <!-- 引入 Tailwind CSS 樣式 -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 p-6 font-sans">
     <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md space-y-4 text-center">
-        <h1 class="text-2xl font-bold text-blue-700">🏠 香港簡單租屋網 - 連線測試</h1>
-        <p class="text-slate-600 text-sm">點擊下方按鈕，直接透過 REST API 檢測資料庫連線：</p>
+        <h1 class="text-2xl font-bold text-blue-700">🏠 香港簡單租屋網</h1>
+        <p class="text-slate-600 text-sm">單一檔案整合介面 - 資料庫連線測試</p>
         
         <button onclick="testConnection()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow hover:bg-blue-700 transition">
             立即測試資料庫連線
@@ -22,16 +22,15 @@
     </div>
 
     <script>
-        // Supabase REST API 設定
-        const SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";[span_1](start_span)[span_1](end_span)
-        const SUPABASE_KEY = "sb_publishable_IXkN9Thl9EjlyVFEoNaP2w_4eCNP8Xr";
+        // Supabase 設定參數
+        const SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";[span_0](start_span)[span_0](end_span)
+        const SUPABASE_KEY = "請在此處貼上你剛建立的 sb_publishable_ 金鑰";
 
         async function testConnection() {
             const resultBox = document.getElementById('resultBox');
             resultBox.innerHTML = "正在連線查詢資料庫...";
             
             try {
-                // 直接使用標準 Fetch API 請求 listings 資料表
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
                     headers: {
                         'apikey': SUPABASE_KEY,
@@ -44,7 +43,7 @@
                 if (!response.ok) {
                     resultBox.innerHTML = `<span style="color: red;">❌ 查詢失敗 (HTTP ${response.status})：<br>${JSON.stringify(data, null, 2)}</span>`;
                 } else {
-                    resultBox.innerHTML = `<span style="color: green;">✅ 連線成功！取得的租盤資料：<br>${JSON.stringify(data, null, 2)}</span>`;
+                    resultBox.innerHTML = `<span style="color: green;">✅ 成功取得資料：<br>${JSON.stringify(data, null, 2)}</span>`;
                 }
             } catch (err) {
                 resultBox.innerHTML = `<span style="color: red;">❌ 發生異常錯誤：<br>${err.message}</span>`;
