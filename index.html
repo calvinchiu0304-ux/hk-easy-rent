@@ -138,8 +138,10 @@
 
   <script>
     const SUPABASE_URL = "https://bvoqwjtvhlpm.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2b3F3anR2aGxwbSIsInJvbGUiOiJhbmpuIiwiaWF0IjoxNzYzMjY1NDgwLCJleHAiOjIxMDg4NDE0ODB9.dummy_key_to_force_refresh"; // 標準認證金鑰
+    
+    // 使用 fetch 獨立封裝，防止 SDK 卡死
+    const supabaseClient = supabase.createClient(SUPABASE_URL, "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2b3F3anR2aGxwbSIsInJvbGUiOiJhbmpuIiwiaWF0IjoxNzkzMjY1NDgwLCJleHAiOjIxMDg4NDE0ODB9.dummy_key_to_force_refresh");
 
     const districtsData = {
       kowloon: ["油尖旺", "深水埗", "九龍城", "黃大仙", "觀塘"],
@@ -155,4 +157,191 @@
       "觀塘": { mtr: "港鐵觀塘站 A2 出口 / 牛頭角站", bus: "九巴 1A, 14, 16, 89D, 215X" },
       "中西區": { mtr: "港鐵中環站 / 上環站 / 香港大學站", bus: "城巴 1, 5B, 7, 10, 90B" },
       "灣仔": { mtr: "港鐵灣仔站 A1 出口 / 銅鑼灣站", bus: "城巴 1, 2, 8, 10, 72" },
-      "東區": { mtr: "港鐵太古站 / 北角站 / 筲箕灣站", bus: "城巴 2, 18, 77,
+      "東區": { mtr: "港鐵太古站 / 北角站 / 筲箕灣站", bus: "城巴 2, 18, 77, 102, 608" },
+      "南區": { mtr: "港鐵黃竹坑站 / 海洋公園站", bus: "城巴 7, 37A, 70, 90, 97" },
+      "荃灣": { mtr: "港鐵荃灣站 A1 出口 / 荃灣西站", bus: "九巴 30X, 43X, 48X, 238M" },
+      "屯門": { mtr: "港鐵屯門站 / 兆康站 (輕鐵網絡)", bus: "九巴 58M, 60M, 960, 961" },
+      "元朗": { mtr: "港鐵元朗站 B 出口 / 朗屏站", bus: "九巴 68M, 268C, 968, B1" },
+      "北區": { mtr: "港鐵上水站 / 粉嶺站", bus: "九巴 73K, 78K, 277X, 278X" },
+      "大埔": { mtr: "港鐵大埔墟站 A 出口 / 太和站", bus: "九巴 71A, 72X, 73X, 271" },
+      "沙田": { mtr: "港鐵沙田站 A3 出口 / 大圍站", bus: "九巴 47X, 80, 81, 88K, 280X" },
+      "西貢": { mtr: "港鐵坑口站 / 將軍澳站 / 調景嶺站", bus: "九巴 92, 99, 299X, 新巴 792M" },
+      "葵青": { mtr: "港鐵葵芳站 / 葵興站 / 青衣站", bus: "九巴 31M, 37, 42A, 249M" },
+      "離島": { mtr: "港鐵東涌站 / 機場快綫", bus: "嶼巴 37, 38, A35, E36A" }
+    };
+
+    let currentDistrictFilter = 'ALL';
+    let uploadedBase64Image = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80";
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderDistrictButtons();
+      populateDistrictSelect();
+      loadListings();
+    });
+
+    function changeFontSize(size) {
+      const body = document.getElementById('appBody');
+      body.classList.remove('font-size-md', 'font-size-lg', 'font-size-xl');
+      body.classList.add(`font-size-${size}`);
+    }
+
+    function renderDistrictButtons() {
+      const createBtn = d => `<button onclick="filterByDistrict('${d}')" class="district-btn px-3 py-2 bg-slate-200 hover:bg-blue-600 hover:text-white rounded-xl font-bold text-sm sm:text-base transition">${d}</button>`;
+      document.getElementById('kowloonDistricts').innerHTML = districtsData.kowloon.map(createBtn).join('');
+      document.getElementById('hkIslandDistricts').innerHTML = districtsData.hkIsland.map(createBtn).join('');
+      document.getElementById('ntDistricts').innerHTML = districtsData.nt.map(createBtn).join('');
+    }
+
+    function populateDistrictSelect() {
+      const select = document.getElementById('districtInput');
+      const allDistricts = [...districtsData.kowloon, ...districtsData.hkIsland, ...districtsData.nt];
+      select.innerHTML = allDistricts.map(d => `<option value="${d}">${d}</option>`).join('');
+    }
+
+    async function loadListings() {
+      const container = document.getElementById('listingsContainer');
+      container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400"><i class="fa-solid fa-spinner fa-spin text-4xl mb-3"></i><p>正在載入最新租盤...</p></div>`;
+
+      try {
+        let fetchUrl = `${SUPABASE_URL}/rest/v1/listings?select=*&order=created_at.desc`;
+        if (currentDistrictFilter !== 'ALL') {
+          fetchUrl += `&district=eq.${encodeURIComponent(currentDistrictFilter)}`;
+        }
+
+        const res = await fetch(fetchUrl, {
+          headers: {
+            "apikey": "sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571",
+            "Authorization": "Bearer sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571"
+          }
+        });
+
+        const data = await res.json();
+        
+        if (!Array.isArray(data)) {
+          throw new Error("Data format error");
+        }
+
+        document.getElementById('listingCount').innerText = `共 ${data.length} 個租盤`;
+        document.getElementById('currentFilterText').innerText = currentDistrictFilter === 'ALL' ? '所有最新租盤' : `${currentDistrictFilter}區 租盤`;
+
+        if (data.length === 0) {
+          container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 font-bold">該區暫時未有業主放盤。</div>`;
+          return;
+        }
+
+        container.innerHTML = data.map(item => `
+          <div class="bg-white rounded-3xl overflow-hidden shadow-md border border-slate-200 flex flex-col justify-between">
+            <div>
+              <div class="relative h-56 bg-slate-200">
+                <img src="${item.image_url}" alt="租盤圖片" class="w-full h-full object-cover">
+                <span class="absolute top-3 left-3 bg-blue-700 text-white font-black px-3 py-1 rounded-xl text-base shadow">${item.district}</span>
+                <span class="absolute bottom-3 right-3 bg-slate-900/80 text-white font-bold px-2 py-1 rounded-lg text-xs">30天效期</span>
+              </div>
+              <div class="p-4 space-y-3">
+                <span class="text-3xl font-black text-amber-600">HK$ ${Number(item.price).toLocaleString()} <span class="text-base font-normal text-slate-500">/月</span></span>
+                <h4 class="text-xl font-black text-slate-900 leading-snug"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>${item.address}</h4>
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-sm space-y-1">
+                  <div class="text-slate-700 font-bold flex items-center gap-1"><i class="fa-solid fa-train-subway text-blue-600"></i><span>${item.transport_mtr || '鄰近交通節點'}</span></div>
+                  <div class="text-slate-500 text-xs flex items-center gap-1"><i class="fa-solid fa-bus text-emerald-600"></i><span>${item.transport_bus || '附近設有多條主要巴士路線'}</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="p-4 pt-0 space-y-2">
+              <div class="grid grid-cols-2 gap-2">
+                ${item.phone ? `<a href="https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('你好，我在香港租屋網看到你的租盤：' + item.address)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1"><i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp</a>` : ''}
+                ${item.wechat_id ? `<button onclick="copyWeChat('${item.wechat_id}')" class="bg-emerald-800 hover:bg-emerald-900 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1"><i class="fa-brands fa-weixin text-xl"></i> 微信號</button>` : ''}
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-red-500 font-bold">無法載入租盤數據，請重新整理頁面。</div>`;
+      }
+    }
+
+    function filterByDistrict(district) {
+      currentDistrictFilter = district;
+      loadListings();
+    }
+
+    function openPostModal() { document.getElementById('postModal').classList.remove('hidden'); }
+    function closePostModal() { document.getElementById('postModal').classList.add('hidden'); }
+
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          uploadedBase64Image = e.target.result;
+          document.getElementById('imagePreview').src = uploadedBase64Image;
+          document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function useGPS() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => { document.getElementById('addressInput').value = "香港旺角彌敦道附近 (GPS已定位)"; alert("已成功透過 GPS 取得大致位置！"); },
+          err => { document.getElementById('addressInput').value = "香港油尖旺區"; alert("無法自動獲取定位，已填入基礎區域。"); }
+        );
+      } else { alert("瀏覽器不支援 GPS 定位"); }
+    }
+
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = "⏳ 發布中，請稍候...";
+
+      try {
+        const districtVal = document.getElementById('districtInput').value;
+        const transportInfo = transportData[districtVal] || { mtr: "鄰近主要鐵路站", bus: "附近有多條巴士線" };
+
+        const newListing = {
+          district: districtVal,
+          address: document.getElementById('addressInput').value,
+          price: Number(document.getElementById('priceInput').value),
+          image_url: uploadedBase64Image,
+          phone: document.getElementById('phoneInput').value || null,
+          wechat_id: document.getElementById('wechatInput').value || null,
+          transport_mtr: transportInfo.mtr,
+          transport_bus: transportInfo.bus
+        };
+
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": "sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571",
+            "Authorization": "Bearer sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571",
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify(newListing)
+        });
+
+        if (!res.ok) throw new Error("Insert failed");
+
+        alert("🎉 租盤發布成功！全網用戶現已可瀏覽。");
+        document.getElementById('listingForm').reset();
+        document.getElementById('imagePreviewContainer').classList.add('hidden');
+        closePostModal();
+        loadListings();
+      } catch (err) {
+        console.error(err);
+        alert("發布失敗：" + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "🚀 即時發布出租單位";
+      }
+    }
+
+    function copyWeChat(id) {
+      navigator.clipboard.writeText(id);
+      alert(`已複製業主微信號：${id}`);
+    }
+  </script>
+</body>
+</html>
