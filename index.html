@@ -6,13 +6,11 @@
     <title>香港簡單租屋網 - 測試版</title>
     <!-- 引入 Tailwind CSS 樣式 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Supabase JS 客戶端庫 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 p-6 font-sans">
     <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md space-y-4 text-center">
         <h1 class="text-2xl font-bold text-blue-700">🏠 香港簡單租屋網 - 連線測試</h1>
-        <p class="text-slate-600 text-sm">點擊下方按鈕，直接檢測 Supabase 資料庫連線與讀取租盤資料：</p>
+        <p class="text-slate-600 text-sm">點擊下方按鈕，直接透過 REST API 檢測資料庫連線：</p>
         
         <button onclick="testConnection()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow hover:bg-blue-700 transition">
             立即測試資料庫連線
@@ -24,25 +22,27 @@
     </div>
 
     <script>
-        // Supabase 專案設定（已填入正確的網址與公開金鑰）[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span)
-        const SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";[span_2](start_span)[span_2](end_span)
-        const SUPABASE_KEY = "sb_publishable_c54wB_87vg2vjHBNIJURcw_lK6jD9dI";[span_3](start_span)[span_3](end_span)
-        
-        // 初始化 Supabase 用戶端
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Supabase REST API 設定
+        const SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";[span_1](start_span)[span_1](end_span)
+        const SUPABASE_KEY = "sb_publishable_c54wB_87vg2vjHBNIJURcw_lK6jD9dI";
 
-        // 測試連線與讀取 listings 表格資料函數
         async function testConnection() {
             const resultBox = document.getElementById('resultBox');
             resultBox.innerHTML = "正在連線查詢資料庫...";
             
             try {
-                const { data, error } = await supabaseClient
-                    .from('listings')
-                    .select('*');
+                // 直接使用標準 Fetch API 請求 listings 資料表
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
 
-                if (error) {
-                    resultBox.innerHTML = `<span style="color: red;">❌ 查詢失敗：<br>${JSON.stringify(error, null, 2)}</span>`;
+                const data = await response.json();
+
+                if (!response.ok) {
+                    resultBox.innerHTML = `<span style="color: red;">❌ 查詢失敗 (HTTP ${response.status})：<br>${JSON.stringify(data, null, 2)}</span>`;
                 } else {
                     resultBox.innerHTML = `<span style="color: green;">✅ 連線成功！取得的租盤資料：<br>${JSON.stringify(data, null, 2)}</span>`;
                 }
