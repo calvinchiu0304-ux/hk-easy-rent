@@ -94,7 +94,7 @@
       <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-3xl font-black px-3 py-1">✕</button>
 
       <h2 class="text-2xl font-black text-blue-900 mb-1"><i class="fa-solid fa-house-medical mr-2 text-amber-500"></i>免費業主放盤</h2>
-      <p class="text-slate-500 text-sm mb-4">使用 GPS 定位後可一鍵快選鄰近門牌與大廈名稱，省時又精準。</p>
+      <p class="text-slate-500 text-sm mb-4">使用 GPS 定位後可一鍵快選門牌大廈，系統會自動預載獨立交通資訊。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
         
@@ -121,28 +121,31 @@
           <div class="flex justify-between items-center mb-1">
             <label class="block font-black text-slate-800">4. 詳細地址與門牌快選</label>
             <button type="button" onclick="useGPS()" class="text-sm bg-emerald-100 text-emerald-900 font-bold px-2.5 py-1 rounded-lg border border-emerald-300 flex items-center gap-1 hover:bg-emerald-200 transition">
-              <i class="fa-solid fa-location-crosshairs"></i> GPS定位與鄰近門牌
+              <i class="fa-solid fa-location-crosshairs"></i> GPS定位與門牌
             </button>
           </div>
           <input type="text" id="addressInput" required placeholder="例如：彌敦道100號金華大廈" class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold focus:border-blue-600 outline-none">
           
-          <!-- 智慧鄰近門牌與大廈快選按鈕容器 -->
           <div id="addressSuggestions" class="hidden mt-2 p-2 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1.5">
-            <span class="text-xs font-bold text-emerald-800 block">💡 點擊下方鄰近門牌快速填入：</span>
+            <span class="text-xs font-bold text-emerald-800 block">💡 點擊下方門牌大廈快速填入：</span>
             <div class="flex flex-wrap gap-1.5" id="suggestionButtons"></div>
           </div>
         </div>
 
-        <!-- 交通資訊自定義欄位 -->
+        <!-- 三項獨立交通資訊欄位 -->
         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-300/80 space-y-3">
-          <span class="block font-black text-slate-800 text-sm">5. 交通與口岸指引 (已預載，可修改)</span>
+          <span class="block font-black text-slate-800 text-sm">5. 交通與口岸指南 (可自由微調)</span>
           <div>
-            <label class="text-xs font-bold text-slate-600">🚇 港鐵站與出入口 / 地標商場</label>
+            <label class="text-xs font-bold text-slate-600">🚇 港鐵站與出入口</label>
             <input type="text" id="transportMtrInput" class="w-full p-2 border rounded-xl text-sm font-bold bg-white outline-none focus:border-blue-600">
           </div>
           <div>
-            <label class="text-xs font-bold text-slate-600">🚌 巴士路線與內地口岸直通巴</label>
+            <label class="text-xs font-bold text-slate-600">🚌 本地巴士路線</label>
             <input type="text" id="transportBusInput" class="w-full p-2 border rounded-xl text-sm font-bold bg-white outline-none focus:border-blue-600">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-600">🚄 內地跨境交通 / 口岸直通巴</label>
+            <input type="text" id="transportChinaInput" class="w-full p-2 border rounded-xl text-sm font-bold bg-white outline-none focus:border-blue-600">
           </div>
         </div>
 
@@ -177,29 +180,30 @@
 
     const districtsData = {
       kowloon: ["油尖旺", "深水埗", "九龍城", "黃大仙", "觀塘"],
-      hkIsland: ["中西區", "灣仔", "東區", "南區"],
+      hkIsland: ["中西區", "湾仔", "東區", "南區"],
       nt: ["荃灣", "屯門", "元朗", "北區", "大埔", "沙田", "西貢", "葵青", "離島"]
     };
 
+    // 分拆「港鐵」、「本地巴士」與「內地交通」三項獨立資料庫
     const transportData = {
-      "油尖旺": { mtr: "港鐵旺角站 E1出口 / 尖沙咀站 / 朗豪坊", bus: "九巴 1, 6 | 皇崗口岸/西九龍高鐵站直達" },
-      "深水埗": { mtr: "港鐵深水埗站 C2出口 / 長沙灣站 / 西九龍中心", bus: "九巴 2, 6F, 30X | 城巴 E21" },
-      "九龍城": { mtr: "港鐵宋皇臺站 B2出口 / 土瓜灣站 / 啟德地標", bus: "九巴 1A, 2A, 11X | 直達港鐵轉車站" },
-      "黃大仙": { mtr: "港鐵黃大仙站 B3出口 / 鑽石山站 / 黃大仙中心", bus: "九巴 2F, 3C, 11 | 鄰近龍翔道主幹道" },
-      "觀塘": { mtr: "港鐵觀塘站 A2出口 / 牛頭角站 / APM商場", bus: "九巴 1A, 14, 16 | 觀塘道巴士轉乘網絡" },
-      "中西區": { mtr: "港鐵中環站 D出口 / 上環站 / 港鐵香港站", bus: "城巴 1, 5B | 港澳碼頭/機場快綫聯絡" },
-      "灣仔": { mtr: "港鐵灣仔站 A1出口 / 銅鑼灣站 / 會展站", bus: "城巴 2, 8 | 跨境直通巴灣仔總站" },
-      "東區": { mtr: "港鐵太古站 C出口 / 北角站 / 太古城中心", bus: "城巴 2, 18, 77 | 東區走廊快速公車" },
-      "南區": { mtr: "港鐵黃竹坑站 B出口 / 海洋公園站 / The Southside", bus: "城巴 7, 70, 90 | 香港仔隧道巴士線" },
-      "荃灣": { mtr: "港鐵荃灣站 A1出口 / 荃灣西站 / 愉景新城", bus: "九巴 30X, 43X | 皇崗口岸直通巴總站" },
-      "屯門": { mtr: "港鐵屯門站 C出口 / 兆康站 / V city", bus: "九巴 58M, 960 | 深圳灣口岸 B3X 巴士直達" },
-      "元朗": { mtr: "港鐵元朗站 B出口 / 朗屏站 / YOHO MALL", bus: "九巴 968, B1 | 福田/落馬洲口岸巴士直達" },
-      "北區": { mtr: "港鐵上水站 A出口 / 粉嶺站 / 上水廣場", bus: "九巴 73K | 鄰近羅湖/香園圍蓮塘口岸" },
-      "大埔": { mtr: "港鐵大埔墟站 A出口 / 太和站 / 新達廣場", bus: "九巴 71A, 72X, 73X | 吐露港幹線快線" },
-      "沙田": { mtr: "港鐵沙田站 A3出口 / 大圍站 / 新城市廣場", bus: "九巴 47X, 81 | 屯馬線與東鐵線樞紐" },
-      "西貢": { mtr: "港鐵坑口站 B出口 / 將軍澳站 / 東港城", bus: "九巴 92, 299X | 西貢市中心直通車" },
-      "葵青": { mtr: "港鐵葵芳站 C出口 / 青衣站 / 新都會廣場", bus: "九巴 31M, 42A | 港珠澳大橋/機場接駁巴士" },
-      "離島": { mtr: "港鐵東涌站 C出口 / 機場快綫 / 東薈城", bus: "嶼巴 37, E36A | 港珠澳大橋口岸巴士" }
+      "油尖旺": { mtr: "港鐵旺角站 E1出口 / 尖沙咀站 / 朗豪坊", bus: "九巴 1, 1A, 2, 6, 9, 234X", china: "皇崗口岸直通巴 / 高鐵西九龍站直達" },
+      "深水埗": { mtr: "港鐵深水埗站 C2出口 / 長沙灣站 / 西九龍中心", bus: "九巴 2, 6F, 30X, 214 | 城巴 E21", china: "經屯馬線直達深圳灣口岸轉乘點" },
+      "九龍城": { mtr: "港鐵宋皇臺站 B2出口 / 土瓜灣站 / 啟德地標", bus: "九巴 1A, 2A, 11X, 107", china: "直達九龍城跨境巴總站" },
+      "黃大仙": { mtr: "港鐵黃大仙站 B3出口 / 鑽石山站 / 黃大仙中心", bus: "九巴 2F, 3C, 11, 85M", china: "鑽石山高鐵接駁專線" },
+      "觀塘": { mtr: "港鐵觀塘站 A2出口 / 牛頭角站 / APM商場", bus: "九巴 1A, 14, 16, 89D, 215X", china: "觀塘跨境直通巴總站 (經皇崗)" },
+      "中西區": { mtr: "港鐵中環站 D出口 / 上環站 / 港鐵香港站", bus: "城巴 1, 5B, 7, 10, 90B", china: "港澳碼頭跨境船 / 中環跨境巴" },
+      "灣仔": { mtr: "港鐵灣仔站 A1出口 / 銅鑼灣站 / 會展站", bus: "城巴 1, 2, 8, 10, 72", china: "灣仔跨境直通巴總站 (皇崗/深圳灣)" },
+      "東區": { mtr: "港鐵太古站 C出口 / 北角站 / 太古城中心", bus: "城巴 2, 18, 77, 102, 608", china: "北角碼頭直通巴專線" },
+      "南區": { mtr: "港鐵黃竹坑站 B出口 / 海洋公園站 / The Southside", bus: "城巴 7, 37A, 70, 90, 97", china: "經香港仔隧道快捷前往西九高鐵站" },
+      "荃灣": { mtr: "港鐵荃灣站 A1出口 / 荃灣西站 / 愉景新城", bus: "九巴 30X, 43X, 48X, 238M", china: "荃灣千色匯皇崗直通巴總站" },
+      "屯門": { mtr: "港鐵屯門站 C出口 / 兆康站 / V city", bus: "九巴 58M, 60M, 960, 961", china: "深圳灣口岸 B3X 巴士 15 分鐘直達" },
+      "元朗": { mtr: "港鐵元朗站 B出口 / 朗屏站 / YOHO MALL", bus: "九巴 68M, 268C, 968", china: "福田/落馬洲口岸 B1 巴士 10 分鐘直達" },
+      "北區": { mtr: "港鐵上水站 A出口 / 粉嶺站 / 上水廣場", bus: "九巴 73K, 78K, 277X, 278X", china: "緊鄰羅湖/落馬洲/香園圍蓮塘口岸" },
+      "大埔": { mtr: "港鐵大埔墟站 A出口 / 太和站 / 新達廣場", bus: "九巴 71A, 72X, 73X, 271", china: "東鐵線幾站直達羅湖/落馬洲" },
+      "沙田": { mtr: "港鐵沙田站 A3出口 / 大圍站 / 新城市廣場", bus: "九巴 47X, 80, 81, 88K, 280X", china: "東鐵線樞紐直達羅湖/高鐵西九龍站" },
+      "西貢": { mtr: "港鐵坑口站 B出口 / 將軍澳站 / 東港城", bus: "九巴 92, 99, 299X", china: "將軍澳跨境巴士線" },
+      "葵青": { mtr: "港鐵葵芳站 C出口 / 青衣站 / 新都會廣場", bus: "九巴 31M, 37, 42A, 249M", china: "葵芳新都會跨境巴 / 港珠澳大橋接駁" },
+      "離島": { mtr: "港鐵東涌站 C出口 / 機場快綫 / 東薈城", bus: "嶼巴 37, 38, A35, E36A", china: "港珠澳大橋口岸巴士 10 分鐘直達" }
     };
 
     let allListings = [];
@@ -239,9 +243,10 @@
 
     function onDistrictChange() {
       const district = document.getElementById('districtInput').value;
-      const info = transportData[district] || { mtr: "鄰近主要港鐵站出口", bus: "多條主要巴士路線" };
+      const info = transportData[district] || { mtr: "鄰近主要港鐵站出口", bus: "多條主要巴士路線", china: "跨境交通便利" };
       document.getElementById('transportMtrInput').value = info.mtr;
       document.getElementById('transportBusInput').value = info.bus;
+      document.getElementById('transportChinaInput').value = info.china;
     }
 
     function previewSelectedImage(event) {
@@ -257,12 +262,10 @@
       }
     }
 
-    // GPS 定位並自動產生帶有大廈名稱的鄰近門牌快選
     function useGPS() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           pos => {
-            // 模擬基於定位產生的鄰近精準門牌與大廈名稱選項
             const mockSuggestions = [
               "彌敦道98號 旺角中心",
               "彌敦道100號 金華大廈",
@@ -276,8 +279,8 @@
             ).join('');
 
             document.getElementById('addressSuggestions').classList.remove('hidden');
-            document.getElementById('addressInput').value = mockSuggestions[1]; // 預設帶入中間門牌
-            alert("已成功透過 GPS 取得定位，請於下方點選最符合的門牌與大廈！");
+            document.getElementById('addressInput').value = mockSuggestions[1];
+            alert("已成功透過 GPS 取得定位，請於下方點選最符合的門牌大廈！");
           },
           err => { 
             document.getElementById('addressInput').value = "香港油尖旺區彌敦道"; 
@@ -292,6 +295,12 @@
     function selectAddress(addr) {
       document.getElementById('addressInput').value = addr;
       document.getElementById('addressSuggestions').classList.add('hidden');
+    }
+
+    // 點擊開啟外部 Google 地圖導航/檢視位置
+    function openMap(query) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+      window.open(url, '_blank');
     }
 
     async function loadListings() {
@@ -335,21 +344,30 @@
       container.innerHTML = data.map(item => {
         const defaultImg = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80";
         const imgUrl = item.image_url || defaultImg;
-        const transportMtr = item.transport_mtr || (transportData[item.district] ? transportData[item.district].mtr : '鄰近主要港鐵站出口');
-        const transportBus = item.transport_bus || (transportData[item.district] ? transportData[item.district].bus : '附近有多條主要巴士路線');
+        const transportMtr = item.transport_mtr || (transportData[item.district] ? transportData[item.district].mtr : '鄰近港鐵站出口');
+        const transportBus = item.transport_bus || (transportData[item.district] ? transportData[item.district].bus : '主要巴士路線');
+        const transportChina = item.transport_china || (transportData[item.district] ? transportData[item.district].china : '跨境交通指引');
 
+        // 聯絡按鈕透明化：完整的 3 種狀態提示（WhatsApp, 微信, 電話）
         let whatsappBtn = '';
         if (item.phone) {
-          whatsappBtn = `<a href="https://wa.me/852${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('你好，我在香港租屋網看到你的租盤：' + item.address)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp</a>`;
+          whatsappBtn = `<a href="https://wa.me/852${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('你好，我在香港租屋網看到你的租盤：' + item.address)}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-3 rounded-xl text-center text-sm shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-brands fa-whatsapp text-lg"></i> WhatsApp</a>`;
         } else {
-          whatsappBtn = `<div class="bg-slate-100 text-slate-400 font-bold py-3 rounded-xl text-center text-xs border border-slate-200/80 flex items-center justify-center gap-1 cursor-not-allowed" title="業主未提供 WhatsApp"><i class="fa-solid fa-comment-slash"></i> 業主未提供WhatsApp</div>`;
+          whatsappBtn = `<div class="bg-slate-100 text-slate-400 font-bold py-3 rounded-xl text-center text-xs border border-slate-200/80 flex items-center justify-center gap-1 cursor-not-allowed" title="業主未提供 WhatsApp"><i class="fa-solid fa-comment-slash"></i> 無WhatsApp</div>`;
         }
 
         let wechatBtn = '';
         if (item.wechat_id) {
-          wechatBtn = `<button onclick="copyWeChat('${item.wechat_id}')" class="bg-emerald-800 hover:bg-emerald-900 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-brands fa-weixin text-xl"></i> 微信號</button>`;
+          wechatBtn = `<button onclick="copyWeChat('${item.wechat_id}')" class="bg-emerald-800 hover:bg-emerald-900 text-white font-black py-3 rounded-xl text-center text-sm shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-brands fa-weixin text-lg"></i> 微信號</button>`;
         } else {
-          wechatBtn = item.phone ? `<a href="tel:${item.phone}" class="bg-blue-700 hover:bg-blue-800 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-solid fa-phone text-lg"></i> 致電業主</a>` : `<div class="bg-slate-100 text-slate-400 font-bold py-3 rounded-xl text-center text-xs border border-slate-200/80 flex items-center justify-center gap-1 cursor-not-allowed"><i class="fa-solid fa-ban"></i> 業主未留電話</div>`;
+          wechatBtn = `<div class="bg-slate-100 text-slate-400 font-bold py-3 rounded-xl text-center text-xs border border-slate-200/80 flex items-center justify-center gap-1 cursor-not-allowed" title="業主未提供微信"><i class="fa-solid fa-ban"></i> 無微信號</div>`;
+        }
+
+        let phoneBtn = '';
+        if (item.phone) {
+          phoneBtn = `<a href="tel:${item.phone}" class="col-span-2 bg-blue-700 hover:bg-blue-800 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-solid fa-phone text-lg"></i> 致電業主 (${item.phone})</a>`;
+        } else {
+          phoneBtn = `<div class="col-span-2 bg-slate-100 text-slate-400 font-bold py-3 rounded-xl text-center text-xs border border-slate-200/80 flex items-center justify-center gap-1 cursor-not-allowed"><i class="fa-solid fa-phone-slash"></i> 業主未留電話</div>`;
         }
 
         return `
@@ -364,16 +382,33 @@
                 <span class="text-3xl font-black text-amber-600 tracking-tight">HK$ ${Number(item.price || 0).toLocaleString()} <span class="text-base font-normal text-slate-500">/月</span></span>
                 <h4 class="text-xl font-black text-slate-900 leading-snug"><i class="fa-solid fa-location-dot text-red-500 mr-1.5"></i>${item.address || '詳細地址請查詢'}</h4>
                 
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/70 text-sm space-y-1.5">
-                  <div class="text-slate-800 font-bold flex items-center gap-1.5"><i class="fa-solid fa-train-subway text-blue-700"></i><span>${transportMtr}</span></div>
-                  <div class="text-slate-600 text-xs flex items-center gap-1.5"><i class="fa-solid fa-bus text-emerald-600"></i><span>${transportBus}</span></div>
+                <!-- 點擊跳轉地圖的三項獨立交通資訊 -->
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/70 text-sm space-y-2">
+                  <div onclick="openMap('${item.address} ${transportMtr}')" class="text-slate-800 font-bold flex items-center gap-1.5 cursor-pointer hover:text-blue-700 transition" title="點擊在地圖開啟地標">
+                    <i class="fa-solid fa-train-subway text-blue-700"></i>
+                    <span class="underline decoration-dashed decoration-blue-400">${transportMtr}</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 ml-auto"></i>
+                  </div>
+                  <div onclick="openMap('${item.address} 巴士站')" class="text-slate-600 text-xs flex items-center gap-1.5 cursor-pointer hover:text-emerald-700 transition" title="點擊在地圖開啟巴士站">
+                    <i class="fa-solid fa-bus text-emerald-600"></i>
+                    <span class="underline decoration-dashed decoration-emerald-400">${transportBus}</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 ml-auto"></i>
+                  </div>
+                  <div onclick="openMap('${item.address} 跨境巴士')" class="text-slate-600 text-xs flex items-center gap-1.5 cursor-pointer hover:text-purple-700 transition" title="點擊在地圖開啟跨境交通">
+                    <i class="fa-solid fa-train-tram text-purple-600"></i>
+                    <span class="underline decoration-dashed decoration-purple-400">${transportChina}</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs text-slate-400 ml-auto"></i>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <!-- 完整 3 重聯絡按鈕佈局 (WhatsApp / 微信 / 致電) -->
             <div class="p-4 pt-0 space-y-2">
               <div class="grid grid-cols-2 gap-2">
                 ${whatsappBtn}
                 ${wechatBtn}
+                ${phoneBtn}
               </div>
             </div>
           </div>
@@ -406,7 +441,8 @@
           phone: document.getElementById('phoneInput').value || null,
           wechat_id: document.getElementById('wechatInput').value || null,
           transport_mtr: document.getElementById('transportMtrInput').value,
-          transport_bus: document.getElementById('transportBusInput').value
+          transport_bus: document.getElementById('transportBusInput').value,
+          transport_china: document.getElementById('transportChinaInput').value
         };
 
         const response = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
