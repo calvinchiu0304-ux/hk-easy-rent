@@ -1,47 +1,55 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>香港極簡免登記租屋網 - 測試版</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香港簡單租屋網 - 測試版</title>
+    <!-- 引入 Tailwind CSS 樣式 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Supabase JS 客戶端庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-100 p-6 font-sans">
-  <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md space-y-4 text-center">
-    <h1 class="text-2xl font-black text-blue-700">🔧 Supabase 連線測試</h1>
-    <p class="text-slate-600 text-sm">點擊下方按鈕，直接檢測資料庫有沒有回應：</p>
-    
-    <button onclick="testConnection()" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow">
-      立即測試資料庫連線
-    </button>
-
-    <div id="resultBox" class="bg-slate-50 p-4 rounded-xl text-left text-xs font-mono border overflow-x-auto hidden">
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_c54wb1f6a1d4715fba393a54ccff2842e1f468202534571";
-
-    async function testConnection() {
-      const box = document.getElementById('resultBox');
-      box.classList.remove('hidden');
-      box.innerHTML = "⏳ 正在連線中...";
-
-      try {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/listings?select=*`, {
-          headers: {
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${SUPABASE_KEY}`
-          }
-        });
+    <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-md space-y-4 text-center">
+        <h1 class="text-2xl font-bold text-blue-700">🏠 香港簡單租屋網 - 連線測試</h1>
+        <p class="text-slate-600 text-sm">點擊下方按鈕，直接檢測 Supabase 資料庫連線與讀取租盤資料：</p>
         
-        const text = await res.text();
-        box.innerHTML = `<b>HTTP 狀態碼:</b> ${res.status} ${res.statusText}<br><br><b>回應內容:</b><br>${text}`;
-      } catch (err) {
-        box.innerHTML = `<span style="color:red;">連線發生例外錯誤：${err.message}</span>`;
-      }
-    }
-  </script>
+        <button onclick="testConnection()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow hover:bg-blue-700 transition">
+            立即測試資料庫連線
+        </button>
+        
+        <div id="resultBox" class="bg-slate-50 p-4 rounded-xl text-left text-xs font-mono border overflow-x-auto max-h-60">
+            等待測試點擊...
+        </div>
+    </div>
+
+    <script>
+        // Supabase 專案設定（已填入正確的網址與公開金鑰）[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span)
+        const SUPABASE_URL = "https://bvoqwjtvhlpmbigowghp.supabase.co";[span_2](start_span)[span_2](end_span)
+        const SUPABASE_KEY = "sb_publishable_c54wB_87vg2vjHBNIJURcw_lK6jD9dI";[span_3](start_span)[span_3](end_span)
+        
+        // 初始化 Supabase 用戶端
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 測試連線與讀取 listings 表格資料函數
+        async function testConnection() {
+            const resultBox = document.getElementById('resultBox');
+            resultBox.innerHTML = "正在連線查詢資料庫...";
+            
+            try {
+                const { data, error } = await supabaseClient
+                    .from('listings')
+                    .select('*');
+
+                if (error) {
+                    resultBox.innerHTML = `<span style="color: red;">❌ 查詢失敗：<br>${JSON.stringify(error, null, 2)}</span>`;
+                } else {
+                    resultBox.innerHTML = `<span style="color: green;">✅ 連線成功！取得的租盤資料：<br>${JSON.stringify(data, null, 2)}</span>`;
+                }
+            } catch (err) {
+                resultBox.innerHTML = `<span style="color: red;">❌ 發生異常錯誤：<br>${err.message}</span>`;
+            }
+        }
+    </script>
 </body>
 </html>
