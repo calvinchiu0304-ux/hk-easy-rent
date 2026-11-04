@@ -4,24 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>香港簡單租屋網</title>
-    <!-- 引入 Tailwind CSS 樣式 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .font-size-sm { font-size: 14px; }
         .font-size-base { font-size: 16px; }
         .font-size-lg { font-size: 18px; }
-        .font-size-xl { font-size: 20px; }
     </style>
 </head>
 <body id="appBody" class="bg-slate-100 font-sans min-h-screen font-size-base text-slate-800 flex flex-col">
 
-    <!-- 頂部導覽列 -->
     <header class="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-50">
         <div class="max-w-xl mx-auto flex justify-between items-center">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 <span>🏠</span> 香港簡單租屋網
             </h1>
-            <!-- 字體大小調整按鈕 -->
             <div class="flex items-center gap-1 text-xs bg-blue-700 p-1 rounded-lg">
                 <span class="px-1 text-blue-200">字體:</span>
                 <button onclick="setFontSize('sm')" id="btn-sm" class="px-2 py-0.5 rounded font-bold hover:bg-blue-800">中</button>
@@ -32,8 +28,6 @@
     </header>
 
     <main class="max-w-xl mx-auto w-full p-4 flex-1 space-y-4">
-        
-        <!-- 區域選擇面板 -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
             <div class="flex justify-between items-center border-b pb-2">
                 <h2 class="font-bold text-blue-800 flex items-center gap-1">
@@ -44,7 +38,6 @@
                 </button>
             </div>
 
-            <!-- 九龍區 -->
             <div class="space-y-1">
                 <div class="text-xs font-bold text-slate-400">九龍區</div>
                 <div class="flex flex-wrap gap-1.5">
@@ -56,7 +49,6 @@
                 </div>
             </div>
 
-            <!-- 港島區 -->
             <div class="space-y-1">
                 <div class="text-xs font-bold text-slate-400">港島區</div>
                 <div class="flex flex-wrap gap-1.5">
@@ -67,7 +59,6 @@
                 </div>
             </div>
 
-            <!-- 新界區 -->
             <div class="space-y-1">
                 <div class="text-xs font-bold text-slate-400">新界區</div>
                 <div class="flex flex-wrap gap-1.5">
@@ -84,13 +75,11 @@
             </div>
         </div>
 
-        <!-- 租盤列表標題欄 -->
         <div class="flex justify-between items-center px-1">
             <h2 class="font-bold text-lg text-slate-700" id="listTitle">所有最新租盤</h2>
             <span class="text-sm text-slate-500" id="rentalCount">載入中...</span>
         </div>
 
-        <!-- 租盤卡片展示區 -->
         <div id="listingsContainer" class="space-y-3">
             <div class="bg-white p-8 rounded-2xl text-center text-slate-400 shadow-sm border">
                 資料載入中，請稍候...
@@ -98,7 +87,6 @@
         </div>
     </main>
 
-    <!-- 頁尾宣告 -->
     <footer class="bg-slate-800 text-slate-300 text-center p-4 text-xs space-y-1">
         <div class="font-semibold">🏠 香港極簡免登記租屋網 © 2026</div>
         <div class="text-slate-400">本平台所有盤源維護 30 天有效期，免手續費免登記。</div>
@@ -165,7 +153,6 @@
             container.innerHTML = filtered.map(item => {
                 const price = item.price ? `$${Number(item.price).toLocaleString()} / 月` : "面議";
                 
-                // 港鐵與巴士提示支援
                 const mtrInfo = item.transport_mtr ? `
                     <div class="flex items-center gap-1.5 text-xs text-slate-700 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">
                         <span class="font-bold text-red-600">🚇 港鐵：</span><span>${item.transport_mtr}</span>
@@ -193,7 +180,6 @@
                         
                         ${item.image_url ? `<img src="${item.image_url}" class="w-full h-48 object-cover rounded-xl border">` : ''}
 
-                        <!-- 交通提示區塊 (港鐵出入口與巴士路線) -->
                         ${(mtrInfo || busInfo) ? `
                             <div class="space-y-1.5 pt-1">
                                 ${mtrInfo}
