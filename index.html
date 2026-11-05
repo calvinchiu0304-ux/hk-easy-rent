@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>全球智慧租屋網 - 香港政府地址API版</title>
+  <!-- OG 分享預覽（固定封面） -->
+  <meta property="og:title" content="全球智慧租屋網">
+  <meta property="og:description" content="香港業主免費放盤，直接聯絡業主租屋">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80">
+  <meta property="og:url" content="">
+  <meta property="og:type" content="website">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -28,6 +35,10 @@
         <button onclick="changeFontSize('md')" id="btn-md" class="px-2.5 py-1 rounded-lg font-bold hover:bg-blue-700 transition">中</button>
         <button onclick="changeFontSize('lg')" id="btn-lg" class="px-2.5 py-1 bg-white text-blue-900 rounded-lg font-bold shadow-sm">大</button>
         <button onclick="changeFontSize('xl')" id="btn-xl" class="px-2.5 py-1 rounded-lg font-bold hover:bg-blue-700 transition">特大</button>
+        <!-- 分享全站按鈕 -->
+        <button onclick="shareWholeWebsite()" class="px-2 py-1 bg-amber-500 hover:bg-amber-600 text-black rounded-lg font-bold ml-2 transition">
+          <i class="fa-solid fa-share-nodes"></i> 分享網站
+        </button>
       </div>
     </div>
   </header>
@@ -202,6 +213,7 @@
     let currentDistrictFilter = 'ALL';
     let uploadedBase64Image = null;
     let addressSearchTimer = null;
+    let targetSingleListingId = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       renderDistrictButtons();
@@ -209,6 +221,9 @@
       loadListings();
       bindAddressSearchEvent();
       bindPricePreview();
+
+      // 讀取URL參數，判斷是否要單獨顯示租盤（模式B）
+      targetSingleListingId = getUrlParam("listing_id");
     });
 
     function changeFontSize(size) {
@@ -387,15 +402,21 @@
       const container = document.getElementById('listingsContainer');
       let data = allListings;
 
-      if (currentDistrictFilter !== 'ALL') {
+      // 模式B：如果URL有listing_id，只保留該單個租盤
+      if(targetSingleListingId){
+        data = allListings.filter(item => item.id == targetSingleListingId);
+        document.getElementById('currentFilterText').innerText = "查看指定租盤";
+      }else if (currentDistrictFilter !== 'ALL') {
         data = allListings.filter(item => item.district === currentDistrictFilter);
+        document.getElementById('currentFilterText').innerText = `${currentDistrictFilter} 租盤`;
+      }else{
+        document.getElementById('currentFilterText').innerText = '所有最新租盤';
       }
 
       document.getElementById('listingCount').innerText = `共 ${data.length} 個租盤`;
-      document.getElementById('currentFilterText').innerText = currentDistrictFilter === 'ALL' ? '所有最新租盤' : `${currentDistrictFilter} 租盤`;
 
       if (data.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 font-bold bg-white rounded-3xl border border-slate-200">該區暫時未有業主放盤。</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 font-bold bg-white rounded-3xl border border-slate-200">該租盤不存在 / 該區暫時未有業主放盤。</div>`;
         return;
       }
 
@@ -425,7 +446,7 @@
         let phoneBtn = item.phone ? `<a href="tel:${item.phone}" class="col-span-2 bg-blue-700 hover:bg-blue-800 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1.5 transition active:scale-95"><i class="fa-solid fa-phone text-lg"></i> 致電業主 (${item.phone})</a>` : `<div class="col-span-2 bg-slate-100 text-slate-400 font-bold py-3 rounded-xl text-center text-xs border flex items-center justify-center gap-1 cursor-not-allowed">業主未留電話</div>`;
 
         return `
-          <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md border border-slate-200/90 flex flex-col justify-between transition">
+          <div data-listing-id="${item.id}" class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md border border-slate-200/90 flex flex-col justify-between transition">
             <div>
               <div class="relative h-56 bg-slate-200">
                 <img src="${imgUrl}" alt="租盤圖片" class="w-full h-full object-cover">
@@ -453,6 +474,10 @@
                 ${whatsappBtn}
                 ${wechatBtn}
                 ${phoneBtn}
+                <!-- 分享本租盤按鈕 -->
+                <button onclick="shareSingleListing(${item.id})" class="col-span-2 bg-slate-700 hover:bg-slate-800 text-white font-black py-3 rounded-xl text-center text-base shadow flex items-center justify-center gap-1.5 transition active:scale-95">
+                  <i class="fa-solid fa-share-nodes text-lg"></i> 分享這個租盤
+                </button>
               </div>
             </div>
           </div>
@@ -461,6 +486,8 @@
     }
 
     function filterByDistrict(district) {
+      // 按分區篩選時，取消單租盤模式
+      targetSingleListingId = null;
       currentDistrictFilter = district;
       renderListings();
     }
@@ -555,6 +582,50 @@
       navigator.clipboard.writeText(id);
       alert(`已複製業主通訊號：${id}`);
     }
+
+    // ========== 分享功能 開始 ==========
+    // 分享整個網站
+    async function shareWholeWebsite() {
+      const siteUrl = window.location.origin + window.location.pathname;
+      const shareData = {
+        title: "全球智慧租屋網",
+        text: "香港業主免費放盤，直接聯絡業主租屋！",
+        url: siteUrl
+      }
+      try {
+        await navigator.share(shareData);
+      } catch(err) {
+        await navigator.clipboard.writeText(siteUrl);
+        alert("已複製網站連結！你可以貼到WhatsApp/微信分享");
+      }
+    }
+
+    // 分享單一個租盤
+    async function shareSingleListing(listingId) {
+      const listingItem = allListings.find(x => x.id === listingId);
+      if(!listingItem) return alert("找不到該租盤資料");
+
+      const listingUrl = `${window.location.origin}${window.location.pathname}?listing_id=${listingId}`;
+      const shareText = `🏠租盤推介\n${listingItem.district}｜${listingItem.building_name}\n租金 HK$${Number(listingItem.price).toLocaleString()}/月\n👉立即查看：`;
+
+      const shareData = {
+        title: `租盤｜${listingItem.building_name} HK$${listingItem.price}`,
+        text: shareText,
+        url: listingUrl
+      }
+      try {
+        await navigator.share(shareData);
+      } catch(err) {
+        await navigator.clipboard.writeText(listingUrl);
+        alert("✅租盤連結已複製！直接貼到WhatsApp或微信分享給朋友");
+      }
+    }
+
+    function getUrlParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+    // ========== 分享功能結束 ==========
   </script>
 </body>
 </html>
