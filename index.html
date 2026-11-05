@@ -91,7 +91,7 @@
       <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-3xl font-black px-3 py-1">✕</button>
 
       <h2 class="text-2xl font-black text-blue-900 mb-1"><i class="fa-solid fa-house-medical mr-2 text-amber-500"></i>免費業主放盤</h2>
-      <p class="text-slate-500 text-sm">✅ 香港地址AI雙向自動填充；輸入大廈/街道門牌可自動補齊地址及交通；海外地址請手動填寫。</p>
+      <p class="text-slate-500 text-sm">✅ 香港地址AI雙向自動填充；輸入大廈/街道門牌可自動補齊地址；海外地址請手動填寫。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
         
@@ -109,7 +109,7 @@
           <div class="text-blue-700 font-bold mt-1 text-sm" id="pricePreview"></div>
         </div>
 
-        <!-- ========== 香港政府地址搜尋模組｜AI雙向填充新版 ========== -->
+        <!-- ========== 香港政府地址搜尋模組｜AI雙向填充【已移除交通自動填充】 ========== -->
         <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-3 relative">
           <label class="block font-black text-blue-950 text-sm">📍 地址搜尋（香港地址優先使用）</label>
           <div class="flex items-center gap-2 mb-2">
@@ -128,29 +128,13 @@
             <input type="text" id="streetAddressInput" required placeholder="例如：廣東道995號 / 弼街62號" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
           </div>
           <div class="text-xs text-slate-500">
-            選取地址後會自動填入上方欄位，並自動設定所屬分區；如屬熱門大廈會自動填入交通資料
+            選取地址後會自動填入上方欄位，並自動設定所屬分區
           </div>
         </div>
 
         <div>
           <label class="block font-black text-slate-800 mb-1">4. 選擇區域 / 城市</label>
-          <select id="districtInput" onchange="onDistrictChange()" required class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold bg-white focus:border-blue-600 outline-none"></select>
-        </div>
-
-        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-300/80 space-y-3">
-          <span class="block font-black text-slate-800 text-sm">5. 交通指南 (可自由編輯微調)</span>
-          <div>
-            <label class="text-xs font-bold text-slate-600">🚇 主要鐵路 / 地鐵站</label>
-            <input type="text" id="transportMtrInput" class="w-full p-2 border rounded-xl text-sm font-bold bg-white outline-none focus:border-blue-600">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-slate-600">🚌 本地巴士 / 公車路線</label>
-            <input type="text" id="transportBusInput" class="w-full p-2 border rounded-xl text-sm font-bold bg-white outline-none focus:border-blue-600">
-          </div>
-          <div>
-            <label class="text-xs font-bold text-slate-600">🚄 跨境交通 / 機場直達</label>
-            <input type="text" id="transportChinaInput" class="w-full p-2 border rounded-xl text-sm font-bold bg-white outline-none focus:border-blue-600">
-          </div>
+          <select id="districtInput" required class="w-full p-3 border-2 border-slate-300 rounded-xl text-lg font-bold bg-white focus:border-blue-600 outline-none"></select>
         </div>
 
         <div class="bg-blue-50/70 p-3.5 rounded-2xl border border-blue-200 space-y-3">
@@ -174,7 +158,7 @@
 
   <footer class="bg-slate-900 text-slate-300 p-6 text-center text-base mt-auto space-y-1.5 border-t border-slate-800">
     <p class="font-bold">🌍 全球智慧租屋網 &copy; 2026</p>
-    <p class="text-xs text-slate-400">本平台採用香港政府標準地址API，AI自動填充地址交通，永久免費。</p>
+    <p class="text-xs text-slate-400">本平台採用香港政府標準地址API，永久免費。</p>
   </footer>
 
   <script>
@@ -186,48 +170,6 @@
       hkIsland: ["中西區", "灣仔", "東區", "南區"],
       nt: ["荃灣", "屯門", "元朗", "北區", "大埔", "沙田", "西貢", "葵青", "離島", "布達佩斯 (海外)"]
     };
-
-    const defaultDistrictTransport = {
-      "油尖旺": { mtr: "港鐵旺角站 / 尖沙咀站 / 佐敦站", bus: "九巴 1, 1A, 2, 6, 9", china: "高鐵西九龍站直達" },
-      "深水埗": { mtr: "港鐵深水埗站 / 長沙灣站 / 太子站", bus: "九巴 2, 6F, 30X, 214", china: "經屯馬線直達深圳灣" },
-      "九龍城": { mtr: "港鐵宋皇臺站 / 土瓜灣站", bus: "九巴 1A, 2A, 11X", china: "直達跨境巴總站" },
-      "黃大仙": { mtr: "港鐵黃大仙站 / 鑽石山站", bus: "九巴 2F, 3C, 11", china: "鑽石山高鐵接駁專線" },
-      "觀塘": { mtr: "港鐵觀塘站 / 牛頭角站", bus: "九巴 1A, 14, 16", china: "觀塘跨境直通巴總站" },
-      "中西區": { mtr: "港鐵中環站 / 上環站", bus: "城巴 1, 5B, 7", china: "港澳碼頭跨境船" },
-      "灣仔": { mtr: "港鐵灣仔站 / 銅鑼灣站", bus: "城巴 1, 2, 8", china: "灣仔跨境直通巴總站" },
-      "東區": { mtr: "港鐵太古站 / 北角站", bus: "城巴 2, 18, 77", china: "北角碼頭直通巴專線" },
-      "南區": { mtr: "港鐵黃竹坑站 / 海洋公園站", bus: "城巴 7, 37A, 70", china: "經香港仔隧道快捷前往" },
-      "荃灣": { mtr: "港鐵荃灣站 / 荃灣西站", bus: "九巴 30X, 43X, 48X", china: "荃灣皇崗直通巴總站" },
-      "屯門": { mtr: "港鐵屯門站 / 兆康站", bus: "九巴 58M, 60M, 960", china: "深圳灣口岸直達" },
-      "元朗": { mtr: "港鐵元朗站 / 朗屏站", bus: "九巴 68M, 268C, 968", china: "福田口岸直達" },
-      "北區": { mtr: "港鐵上水站 / 粉嶺站", bus: "九巴 73K, 78K, 277X", china: "緊鄰羅湖/落馬洲口岸" },
-      "大埔": { mtr: "港鐵大埔墟站 / 太和站", bus: "九巴 71A, 72X, 73X", china: "東鐵線直達羅湖" },
-      "沙田": { mtr: "港鐵沙田站 / 大圍站", bus: "九巴 47X, 80, 81", china: "東鐵線直達西九龍站" },
-      "西貢": { mtr: "港鐵坑口站 / 將軍澳站", bus: "九巴 92, 99, 299X", china: "將軍澳跨境巴士線" },
-      "葵青": { mtr: "港鐵葵芳站 / 青衣站", bus: "九巴 31M, 37, 42A", china: "葵芳跨境巴接駁" },
-      "離島": { mtr: "港鐵東涌站 / 機場快綫", bus: "嶼巴 37, 38, A35", china: "港珠澳大橋口岸巴士" },
-      "布達佩斯 (海外)": { mtr: "地鐵 M1 / M2 / M3 幹線", bus: "市中心 46/47/49 有軌電車", china: "機場直達巴士 100E" }
-    };
-
-    // ========== 本地熱門大廈交通資料庫【你可以在這裡新增更多大廈】==========
-    const buildingTransportDB = [
-      {
-        building:"重慶大廈",
-        streetKeyword:["彌敦道36","彌敦道38","彌敦道40","彌敦道42","彌敦道44"],
-        district:"油尖旺",
-        mtr:"港鐵尖沙咀站",
-        bus:"九巴 1, 1A, 2, 6, 9",
-        crossBorder:"高鐵西九龍站直達"
-      },
-      {
-        building:"旺角中心",
-        streetKeyword:["西洋菜南街65"],
-        district:"油尖旺",
-        mtr:"港鐵旺角站",
-        bus:"九巴 1,1A,2,6,9",
-        crossBorder:"高鐵西九龍站直達"
-      }
-    ];
 
     let allListings = [];
     let currentDistrictFilter = 'ALL';
@@ -271,15 +213,6 @@
       const select = document.getElementById('districtInput');
       const allDistricts = [...districtsData.kowloon, ...districtsData.hkIsland, ...districtsData.nt];
       select.innerHTML = allDistricts.map(d => `<option value="${d}">${d}</option>`).join('');
-      onDistrictChange();
-    }
-
-    function onDistrictChange() {
-      const district = document.getElementById('districtInput').value;
-      const info = defaultDistrictTransport[district] || { mtr: "鄰近地鐵站", bus: "多條公車路線", china: "交通便利" };
-      document.getElementById('transportMtrInput').value = info.mtr;
-      document.getElementById('transportBusInput').value = info.bus;
-      document.getElementById('transportChinaInput').value = info.china;
     }
 
     // ========== 香港政府ALS地址API搜尋 ==========
@@ -346,13 +279,10 @@
       const sel = document.getElementById('districtInput');
       const opt = Array.from(sel.options).find(o=>o.value === districtName);
       if(opt) sel.value = districtName;
-      onDistrictChange();
       document.getElementById('addressSuggestBox').classList.add('hidden');
-      // 完成選取後，自動匹配本地交通庫
-      matchBuildingTransport(building, street);
     }
 
-    // ========== 【核心：離開輸入框onBlur，雙向自動填充地址+交通】==========
+    // ========== 【核心：離開輸入框onBlur，雙向自動填充地址】==========
     function bindBlurAutoFill(){
       const buildingInput = document.getElementById("buildingNameInput");
       const streetInput = document.getElementById("streetAddressInput");
@@ -363,27 +293,12 @@
         const buildingVal = this.value.trim();
         if(!buildingVal) return;
 
-        // 先查本地庫，有就直接填
-        const matchBuilding = buildingTransportDB.find(item => item.building === buildingVal);
-        if(matchBuilding){
-          document.getElementById("streetAddressInput").value = matchBuilding.streetKeyword[0];
-          const sel = document.getElementById('districtInput');
-          const opt = Array.from(sel.options).find(o=>o.value === matchBuilding.district);
-          if(opt) sel.value = matchBuilding.district;
-          onDistrictChange();
-          fillTransport(matchBuilding);
-          return;
-        }
-
-        // 本地庫冇，就呼叫政府ALS API查地址
         if(addressCache.has(buildingVal)){
           const cacheData = addressCache.get(buildingVal);
           document.getElementById("streetAddressInput").value = cacheData.street;
           const sel = document.getElementById('districtInput');
           const opt = Array.from(sel.options).find(o=>o.value === cacheData.district);
           if(opt) sel.value = cacheData.district;
-          onDistrictChange();
-          matchBuildingTransport(buildingVal, cacheData.street);
           return;
         }
 
@@ -401,8 +316,6 @@
           const sel = document.getElementById('districtInput');
           const opt = Array.from(sel.options).find(o=>o.value === districtText);
           if(opt) sel.value = districtText;
-          onDistrictChange();
-          matchBuildingTransport(buildingVal, streetText);
         }catch(e){}
       })
 
@@ -412,29 +325,12 @@
         const streetVal = this.value.trim();
         if(!streetVal) return;
 
-        // 先匹配本地庫街道關鍵字
-        const matchStreetItem = buildingTransportDB.find(item => {
-          return item.streetKeyword.some(keyword => streetVal.includes(keyword));
-        })
-        if(matchStreetItem){
-          document.getElementById("buildingNameInput").value = matchStreetItem.building;
-          const sel = document.getElementById('districtInput');
-          const opt = Array.from(sel.options).find(o=>o.value === matchStreetItem.district);
-          if(opt) sel.value = matchStreetItem.district;
-          onDistrictChange();
-          fillTransport(matchStreetItem);
-          return;
-        }
-
-        // 本地庫冇，呼叫ALS查大廈名稱
         if(addressCache.has(streetVal)){
           const cacheData = addressCache.get(streetVal);
           document.getElementById("buildingNameInput").value = cacheData.building;
           const sel = document.getElementById('districtInput');
           const opt = Array.from(sel.options).find(o=>o.value === cacheData.district);
           if(opt) sel.value = cacheData.district;
-          onDistrictChange();
-          matchBuildingTransport(cacheData.building, streetVal);
           return;
         }
 
@@ -451,28 +347,8 @@
           const sel = document.getElementById('districtInput');
           const opt = Array.from(sel.options).find(o=>o.value === districtText);
           if(opt) sel.value = districtText;
-          onDistrictChange();
-          matchBuildingTransport(buildingText, streetVal);
         }catch(e){}
       })
-    }
-
-    // 比對本地大廈庫，自動填交通欄
-    function matchBuildingTransport(buildingName, streetAddr){
-      const matchItem = buildingTransportDB.find(item => {
-        const matchBuilding = item.building === buildingName;
-        const matchStreet = item.streetKeyword.some(keyword => streetAddr.includes(keyword));
-        return matchBuilding || matchStreet;
-      })
-      if(matchItem){
-        fillTransport(matchItem);
-      }
-    }
-
-    function fillTransport(item){
-      document.getElementById('transportMtrInput').value = item.mtr;
-      document.getElementById('transportBusInput').value = item.bus;
-      document.getElementById('transportChinaInput').value = item.crossBorder;
     }
 
     function toggleOverseasMode(){
@@ -572,9 +448,6 @@
       container.innerHTML = data.map(item => {
         const defaultImg = "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80";
         const imgUrl = item.image_url || defaultImg;
-        const transportMtr = item.transport_mtr || '鄰近地鐵站';
-        const transportBus = item.transport_bus || '多條公車路線';
-        const transportChina = item.transport_china || '交通便利';
 
         const buildingText = item.building_name ? item.building_name.trim() : '';
         const streetText = item.street_address ? item.street_address.trim() : (item.address || '').trim();
@@ -609,12 +482,6 @@
                   <i class="fa-solid fa-location-dot text-red-500 mr-1.5"></i>
                   <span>${displayLocationText}</span>
                 </h4>
-                
-                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200/70 text-sm space-y-2">
-                  <div class="text-slate-800 font-bold flex items-center gap-1.5"><i class="fa-solid fa-train-subway text-blue-700"></i><span>${transportMtr}</span></div>
-                  <div class="text-slate-600 text-xs flex items-center gap-1.5"><i class="fa-solid fa-bus text-emerald-600"></i><span>${transportBus}</span></div>
-                  <div class="text-slate-600 text-xs flex items-center gap-1.5"><i class="fa-solid fa-train-tram text-purple-600"></i><span>${transportChina}</span></div>
-                </div>
               </div>
             </div>
 
@@ -670,8 +537,6 @@
 物業大廈：${buildingNameVal}
 街道門牌：${streetAddressVal}
 每月租金：HK$${priceVal.toLocaleString()}
-🚇鐵路：${document.getElementById('transportMtrInput').value}
-🚌巴士：${document.getElementById('transportBusInput').value}
 ☎️電話：${phoneVal || '沒有填寫'}
 💬微信：${wechatVal || '沒有填寫'}
 
@@ -690,10 +555,7 @@
           price: priceVal,
           image_url: uploadedBase64Image,
           phone: phoneVal || null,
-          wechat_id: wechatVal || null,
-          transport_mtr: document.getElementById('transportMtrInput').value,
-          transport_bus: document.getElementById('transportBusInput').value,
-          transport_china: document.getElementById('transportChinaInput').value
+          wechat_id: wechatVal || null
         };
 
         const response = await fetch(`${SUPABASE_URL}/rest/v1/listings`, {
