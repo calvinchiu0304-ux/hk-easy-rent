@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>全球智慧租屋網 - 香港政府地址API版</title>
+  <title>全球智慧租屋網 - 香港政府地址API版｜AI地址雙向填充</title>
   <!-- OG 分享預覽（固定封面） -->
   <meta property="og:title" content="全球智慧租屋網">
   <meta property="og:description" content="香港業主免費放盤，直接聯絡業主租屋">
@@ -47,7 +47,7 @@
     <div class="flex flex-col sm:flex-row gap-3">
       <button onclick="openPostModal()" class="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-4 px-6 rounded-2xl shadow-md hover:shadow-lg text-xl flex items-center justify-center space-x-2 border-2 border-amber-300 active:scale-95 transition">
         <i class="fa-solid fa-circle-plus text-2xl"></i>
-        <span>我要免費放盤 (政府地址API版)</span>
+        <span>我要免費放盤 (政府地址API｜AI雙向地址填充)</span>
       </button>
     </div>
 
@@ -91,7 +91,7 @@
       <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-3xl font-black px-3 py-1">✕</button>
 
       <h2 class="text-2xl font-black text-blue-900 mb-1"><i class="fa-solid fa-house-medical mr-2 text-amber-500"></i>免費業主放盤</h2>
-      <p class="text-slate-500 text-sm">✅ 香港地址可使用搜尋自動填入，資料更準確；海外地址請手動填寫。</p>
+      <p class="text-slate-500 text-sm">✅ 香港地址AI雙向自動填充；輸入大廈/街道門牌可自動補齊地址及交通；海外地址請手動填寫。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
         
@@ -109,7 +109,7 @@
           <div class="text-blue-700 font-bold mt-1 text-sm" id="pricePreview"></div>
         </div>
 
-        <!-- ========== 香港政府地址搜尋模組 ========== -->
+        <!-- ========== 香港政府地址搜尋模組｜AI雙向填充新版 ========== -->
         <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-3 relative">
           <label class="block font-black text-blue-950 text-sm">📍 地址搜尋（香港地址優先使用）</label>
           <div class="flex items-center gap-2 mb-2">
@@ -128,7 +128,7 @@
             <input type="text" id="streetAddressInput" required placeholder="例如：廣東道995號 / 弼街62號" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
           </div>
           <div class="text-xs text-slate-500">
-            選取地址後會自動填入上方欄位，並自動設定所屬分區
+            選取地址後會自動填入上方欄位，並自動設定所屬分區；如屬熱門大廈會自動填入交通資料
           </div>
         </div>
 
@@ -174,7 +174,7 @@
 
   <footer class="bg-slate-900 text-slate-300 p-6 text-center text-base mt-auto space-y-1.5 border-t border-slate-800">
     <p class="font-bold">🌍 全球智慧租屋網 &copy; 2026</p>
-    <p class="text-xs text-slate-400">本平台採用香港政府標準地址API，提升地址準確度。</p>
+    <p class="text-xs text-slate-400">本平台採用香港政府標準地址API，AI自動填充地址交通，永久免費。</p>
   </footer>
 
   <script>
@@ -209,11 +209,33 @@
       "布達佩斯 (海外)": { mtr: "地鐵 M1 / M2 / M3 幹線", bus: "市中心 46/47/49 有軌電車", china: "機場直達巴士 100E" }
     };
 
+    // ========== 本地熱門大廈交通資料庫【你可以在這裡新增更多大廈】==========
+    const buildingTransportDB = [
+      {
+        building:"重慶大廈",
+        streetKeyword:["彌敦道36","彌敦道38","彌敦道40","彌敦道42","彌敦道44"],
+        district:"油尖旺",
+        mtr:"港鐵尖沙咀站",
+        bus:"九巴 1, 1A, 2, 6, 9",
+        crossBorder:"高鐵西九龍站直達"
+      },
+      {
+        building:"旺角中心",
+        streetKeyword:["西洋菜南街65"],
+        district:"油尖旺",
+        mtr:"港鐵旺角站",
+        bus:"九巴 1,1A,2,6,9",
+        crossBorder:"高鐵西九龍站直達"
+      }
+    ];
+
     let allListings = [];
     let currentDistrictFilter = 'ALL';
     let uploadedBase64Image = null;
     let addressSearchTimer = null;
     let targetSingleListingId = null;
+    // 本地快取，避免重複呼叫政府API
+    const addressCache = new Map();
 
     window.addEventListener('DOMContentLoaded', () => {
       renderDistrictButtons();
@@ -221,6 +243,7 @@
       loadListings();
       bindAddressSearchEvent();
       bindPricePreview();
+      bindBlurAutoFill();
 
       // 讀取URL參數，判斷是否要單獨顯示租盤（模式B）
       targetSingleListingId = getUrlParam("listing_id");
@@ -259,7 +282,7 @@
       document.getElementById('transportChinaInput').value = info.china;
     }
 
-    // ========== 香港政府地址API搜尋 ==========
+    // ========== 香港政府ALS地址API搜尋 ==========
     function bindAddressSearchEvent() {
       const input = document.getElementById('addressSearchInput');
       const suggestBox = document.getElementById('addressSuggestBox');
@@ -315,6 +338,7 @@
       })
     }
 
+    // 選取地址下拉項目
     function selectAddressItem(building, street, districtName){
       document.getElementById('buildingNameInput').value = building;
       document.getElementById('streetAddressInput').value = street;
@@ -324,6 +348,131 @@
       if(opt) sel.value = districtName;
       onDistrictChange();
       document.getElementById('addressSuggestBox').classList.add('hidden');
+      // 完成選取後，自動匹配本地交通庫
+      matchBuildingTransport(building, street);
+    }
+
+    // ========== 【核心：離開輸入框onBlur，雙向自動填充地址+交通】==========
+    function bindBlurAutoFill(){
+      const buildingInput = document.getElementById("buildingNameInput");
+      const streetInput = document.getElementById("streetAddressInput");
+
+      // 輸入大廈名稱，離開輸入框觸發
+      buildingInput.addEventListener('blur', async function(){
+        if(document.getElementById('isOverseasAddr').checked) return;
+        const buildingVal = this.value.trim();
+        if(!buildingVal) return;
+
+        // 先查本地庫，有就直接填
+        const matchBuilding = buildingTransportDB.find(item => item.building === buildingVal);
+        if(matchBuilding){
+          document.getElementById("streetAddressInput").value = matchBuilding.streetKeyword[0];
+          const sel = document.getElementById('districtInput');
+          const opt = Array.from(sel.options).find(o=>o.value === matchBuilding.district);
+          if(opt) sel.value = matchBuilding.district;
+          onDistrictChange();
+          fillTransport(matchBuilding);
+          return;
+        }
+
+        // 本地庫冇，就呼叫政府ALS API查地址
+        if(addressCache.has(buildingVal)){
+          const cacheData = addressCache.get(buildingVal);
+          document.getElementById("streetAddressInput").value = cacheData.street;
+          const sel = document.getElementById('districtInput');
+          const opt = Array.from(sel.options).find(o=>o.value === cacheData.district);
+          if(opt) sel.value = cacheData.district;
+          onDistrictChange();
+          matchBuildingTransport(buildingVal, cacheData.street);
+          return;
+        }
+
+        try{
+          const res = await fetch(`https://geodata.gov.hk/gs/api/v1.0.0/addressSearch?q=${encodeURIComponent(buildingVal)}&lang=tc`);
+          if(!res.ok) return;
+          const json = await res.json();
+          if(!json.result || json.result.length ===0) return;
+          const firstResult = json.result[0];
+          const streetText = firstResult.street + (firstResult.streetNo? " "+firstResult.streetNo : "");
+          const districtText = firstResult.district;
+          // 存入快取
+          addressCache.set(buildingVal, {street:streetText, district:districtText});
+          document.getElementById("streetAddressInput").value = streetText;
+          const sel = document.getElementById('districtInput');
+          const opt = Array.from(sel.options).find(o=>o.value === districtText);
+          if(opt) sel.value = districtText;
+          onDistrictChange();
+          matchBuildingTransport(buildingVal, streetText);
+        }catch(e){}
+      })
+
+      // 輸入街道門牌，離開輸入框觸發，反向查大廈名稱
+      streetInput.addEventListener('blur', async function(){
+        if(document.getElementById('isOverseasAddr').checked) return;
+        const streetVal = this.value.trim();
+        if(!streetVal) return;
+
+        // 先匹配本地庫街道關鍵字
+        const matchStreetItem = buildingTransportDB.find(item => {
+          return item.streetKeyword.some(keyword => streetVal.includes(keyword));
+        })
+        if(matchStreetItem){
+          document.getElementById("buildingNameInput").value = matchStreetItem.building;
+          const sel = document.getElementById('districtInput');
+          const opt = Array.from(sel.options).find(o=>o.value === matchStreetItem.district);
+          if(opt) sel.value = matchStreetItem.district;
+          onDistrictChange();
+          fillTransport(matchStreetItem);
+          return;
+        }
+
+        // 本地庫冇，呼叫ALS查大廈名稱
+        if(addressCache.has(streetVal)){
+          const cacheData = addressCache.get(streetVal);
+          document.getElementById("buildingNameInput").value = cacheData.building;
+          const sel = document.getElementById('districtInput');
+          const opt = Array.from(sel.options).find(o=>o.value === cacheData.district);
+          if(opt) sel.value = cacheData.district;
+          onDistrictChange();
+          matchBuildingTransport(cacheData.building, streetVal);
+          return;
+        }
+
+        try{
+          const res = await fetch(`https://geodata.gov.hk/gs/api/v1.0.0/addressSearch?q=${encodeURIComponent(streetVal)}&lang=tc`);
+          if(!res.ok) return;
+          const json = await res.json();
+          if(!json.result || json.result.length ===0) return;
+          const firstResult = json.result[0];
+          const buildingText = firstResult.buildingName || '';
+          const districtText = firstResult.district;
+          addressCache.set(streetVal, {building:buildingText, district:districtText});
+          document.getElementById("buildingNameInput").value = buildingText;
+          const sel = document.getElementById('districtInput');
+          const opt = Array.from(sel.options).find(o=>o.value === districtText);
+          if(opt) sel.value = districtText;
+          onDistrictChange();
+          matchBuildingTransport(buildingText, streetVal);
+        }catch(e){}
+      })
+    }
+
+    // 比對本地大廈庫，自動填交通欄
+    function matchBuildingTransport(buildingName, streetAddr){
+      const matchItem = buildingTransportDB.find(item => {
+        const matchBuilding = item.building === buildingName;
+        const matchStreet = item.streetKeyword.some(keyword => streetAddr.includes(keyword));
+        return matchBuilding || matchStreet;
+      })
+      if(matchItem){
+        fillTransport(matchItem);
+      }
+    }
+
+    function fillTransport(item){
+      document.getElementById('transportMtrInput').value = item.mtr;
+      document.getElementById('transportBusInput').value = item.bus;
+      document.getElementById('transportChinaInput').value = item.crossBorder;
     }
 
     function toggleOverseasMode(){
