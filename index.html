@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>全球智慧租屋網 - 正式結構化版</title>
+  <title>全球智慧租屋網 - 香港政府地址API版</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -11,6 +11,9 @@
     .font-size-md { font-size: 18px; }
     .font-size-lg { font-size: 22px; }
     .font-size-xl { font-size: 26px; }
+    .address-suggest-item:hover {
+      background-color: #dbeafe;
+    }
   </style>
 </head>
 <body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col font-size-lg" id="appBody">
@@ -33,7 +36,7 @@
     <div class="flex flex-col sm:flex-row gap-3">
       <button onclick="openPostModal()" class="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-4 px-6 rounded-2xl shadow-md hover:shadow-lg text-xl flex items-center justify-center space-x-2 border-2 border-amber-300 active:scale-95 transition">
         <i class="fa-solid fa-circle-plus text-2xl"></i>
-        <span>我要免費放盤 (欄位隔離修正版)</span>
+        <span>我要免費放盤 (政府地址API版)</span>
       </button>
     </div>
 
@@ -52,7 +55,7 @@
           <div class="flex flex-wrap gap-2" id="hkIslandDistricts"></div>
         </div>
         <div>
-          <span class="text-xs font-bold text-slate-400 block mb-1">新界區 / 海外城市</span>
+          <span class="text-xs font-bold text-slate-400 block mb-1">新界及離島 / 海外城市</span>
           <div class="flex flex-wrap gap-2" id="ntDistricts"></div>
         </div>
       </div>
@@ -77,7 +80,7 @@
       <button onclick="closePostModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-3xl font-black px-3 py-1">✕</button>
 
       <h2 class="text-2xl font-black text-blue-900 mb-1"><i class="fa-solid fa-house-medical mr-2 text-amber-500"></i>免費業主放盤</h2>
-      <p class="text-slate-500 text-sm">請正確填寫各項獨立欄位，系統已全面防範資料錯位。</p>
+      <p class="text-slate-500 text-sm">✅ 香港地址可使用搜尋自動填入，資料更準確；海外地址請手動填寫。</p>
 
       <form id="listingForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
         
@@ -91,20 +94,30 @@
 
         <div>
           <label class="block font-black text-slate-800 mb-1">2. 每月租金 (HKD)</label>
-          <input type="number" id="priceInput" required placeholder="例如：12000" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl font-bold focus:border-blue-600 outline-none">
+          <input type="number" id="priceInput" required placeholder="例如：12000" min="1000" max="200000" class="w-full p-3 border-2 border-slate-300 rounded-xl text-xl font-bold focus:border-blue-600 outline-none">
+          <div class="text-blue-700 font-bold mt-1 text-sm" id="pricePreview"></div>
         </div>
 
-        <div class="space-y-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-          <span class="block font-black text-blue-950 text-sm">3. 地址結構 (獨立隔離)</span>
+        <!-- ========== 香港政府地址搜尋模組 ========== -->
+        <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-3 relative">
+          <label class="block font-black text-blue-950 text-sm">📍 地址搜尋（香港地址優先使用）</label>
+          <div class="flex items-center gap-2 mb-2">
+            <input type="checkbox" id="isOverseasAddr" onchange="toggleOverseasMode()">
+            <label for="isOverseasAddr" class="text-sm font-bold text-slate-700">海外地址（不使用香港地址搜尋）</label>
+          </div>
+          <input type="text" id="addressSearchInput" placeholder="輸入屋苑 / 大廈 / 街道，例如：國康大樓" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
+          <div id="addressSuggestBox" class="absolute left-4 right-4 top-full bg-white border-2 border-slate-200 rounded-xl max-h-52 overflow-y-auto z-40 hidden"></div>
           
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">🏢 大廈 / 屋苑名稱</label>
-            <input type="text" id="buildingNameInput" oninput="onAddressInputTyped()" required placeholder="例如：國康大樓 / 旺角中心" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
+            <input type="text" id="buildingNameInput" required placeholder="例如：國康大樓 / 旺角中心" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
           </div>
-
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">📍 詳細街道與門牌</label>
-            <input type="text" id="streetAddressInput" oninput="onAddressInputTyped()" required placeholder="例如：廣東道995號 / 弼街62號" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
+            <input type="text" id="streetAddressInput" required placeholder="例如：廣東道995號 / 弼街62號" class="w-full p-2.5 bg-white border-2 border-slate-300 rounded-xl text-base font-bold focus:border-blue-600 outline-none">
+          </div>
+          <div class="text-xs text-slate-500">
+            選取地址後會自動填入上方欄位，並自動設定所屬分區
           </div>
         </div>
 
@@ -133,7 +146,7 @@
           <span class="block font-black text-blue-950">6. 業主聯絡方式 (至少填一項)</span>
           <div>
             <label class="text-sm font-bold text-slate-700">電話 / WhatsApp / 海外號碼</label>
-            <input type="tel" id="phoneInput" placeholder="例如：91234567" class="w-full p-2.5 border rounded-xl font-bold outline-none focus:border-blue-600">
+            <input type="tel" id="phoneInput" placeholder="香港手機：91234567" class="w-full p-2.5 border rounded-xl font-bold outline-none focus:border-blue-600">
           </div>
           <div>
             <label class="text-sm font-bold text-slate-700">微信號 (WeChat ID) / 通訊軟體</label>
@@ -150,7 +163,7 @@
 
   <footer class="bg-slate-900 text-slate-300 p-6 text-center text-base mt-auto space-y-1.5 border-t border-slate-800">
     <p class="font-bold">🌍 全球智慧租屋網 &copy; 2026</p>
-    <p class="text-xs text-slate-400">本平台採用欄位隔離與標準結構化資料標準。</p>
+    <p class="text-xs text-slate-400">本平台採用香港政府標準地址API，提升地址準確度。</p>
   </footer>
 
   <script>
@@ -160,7 +173,7 @@
     const districtsData = {
       kowloon: ["油尖旺", "深水埗", "九龍城", "黃大仙", "觀塘"],
       hkIsland: ["中西區", "灣仔", "東區", "南區"],
-      nt: ["荃灣", "屯門", "元朗", "北區", "大埔", "沙田", "西貢", "葵青", "布達佩斯 (海外)"]
+      nt: ["荃灣", "屯門", "元朗", "北區", "大埔", "沙田", "西貢", "葵青", "離島", "布達佩斯 (海外)"]
     };
 
     const defaultDistrictTransport = {
@@ -188,11 +201,14 @@
     let allListings = [];
     let currentDistrictFilter = 'ALL';
     let uploadedBase64Image = null;
+    let addressSearchTimer = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       renderDistrictButtons();
       populateDistrictSelect();
       loadListings();
+      bindAddressSearchEvent();
+      bindPricePreview();
     });
 
     function changeFontSize(size) {
@@ -220,45 +236,111 @@
       onDistrictChange();
     }
 
-    function onAddressInputTyped() {
-      const buildingText = document.getElementById('buildingNameInput').value.toLowerCase();
-      const streetText = document.getElementById('streetAddressInput').value.toLowerCase();
-      const fullText = buildingText + " " + streetText;
-
-      const numberMatch = fullText.match(/\d+/);
-      const streetNum = numberMatch ? parseInt(numberMatch[0]) : 0;
-
-      if (fullText.includes("廣東道")) {
-        if (streetNum >= 800) {
-          document.getElementById('transportMtrInput').value = "港鐵奧運站 D1出口 / 旺角站 C出口";
-          document.getElementById('transportBusInput').value = "九巴 12, 31B, 914 | 城巴 E21";
-          document.getElementById('districtInput').value = "油尖旺";
-        } else if (streetNum >= 400) {
-          document.getElementById('transportMtrInput').value = "港鐵佐敦站 C出口 / 柯士甸站";
-          document.getElementById('transportBusInput').value = "九巴 14, 36X, 268B";
-          document.getElementById('districtInput').value = "油尖旺";
-        } else if (streetNum > 0) {
-          document.getElementById('transportMtrInput').value = "港鐵尖沙咀站 A1出口";
-          document.getElementById('transportBusInput').value = "九巴 1, 1A, 2, 6";
-          document.getElementById('districtInput').value = "油尖旺";
-        }
-      } else if (fullText.includes("弼街")) {
-        document.getElementById('transportMtrInput').value = "港鐵太子站 B2 / C2出口";
-        document.getElementById('transportBusInput').value = "九巴 6, 6C, 30X, 234X";
-        document.getElementById('districtInput').value = "油尖旺";
-      } else if (fullText.includes("西洋菜") || fullText.includes("旺角中心")) {
-        document.getElementById('transportMtrInput').value = "港鐵旺角站 D2 / B2出口";
-        document.getElementById('transportBusInput').value = "九巴 1A, 2, 6, 9";
-        document.getElementById('districtInput').value = "油尖旺";
-      }
-    }
-
     function onDistrictChange() {
       const district = document.getElementById('districtInput').value;
       const info = defaultDistrictTransport[district] || { mtr: "鄰近地鐵站", bus: "多條公車路線", china: "交通便利" };
       document.getElementById('transportMtrInput').value = info.mtr;
       document.getElementById('transportBusInput').value = info.bus;
       document.getElementById('transportChinaInput').value = info.china;
+    }
+
+    // ========== 香港政府地址API搜尋 ==========
+    function bindAddressSearchEvent() {
+      const input = document.getElementById('addressSearchInput');
+      const suggestBox = document.getElementById('addressSuggestBox');
+      input.addEventListener('input', function () {
+        if(document.getElementById('isOverseasAddr').checked){
+          suggestBox.classList.add('hidden');
+          return;
+        }
+        clearTimeout(addressSearchTimer);
+        const kw = this.value.trim();
+        suggestBox.innerHTML = '';
+        if(kw.length < 2){
+          suggestBox.classList.add('hidden');
+          return;
+        }
+        addressSearchTimer = setTimeout(async ()=>{
+          try{
+            const res = await fetch(`https://geodata.gov.hk/gs/api/v1.0.0/addressSearch?q=${encodeURIComponent(kw)}&lang=tc`);
+            if(!res.ok) throw new Error("地址API失敗");
+            const json = await res.json();
+            if(!json.result || json.result.length === 0){
+              suggestBox.innerHTML = `<div class="p-3 text-slate-400 text-sm">找不到對應地址，請嘗試其他關鍵字</div>`;
+              suggestBox.classList.remove('hidden');
+              return;
+            }
+            suggestBox.innerHTML = json.result.slice(0,6).map(item=>{
+              const fullAddr = item.address;
+              const building = item.buildingName || '';
+              const street = item.street + (item.streetNo? " "+item.streetNo : "");
+              const districtName = item.district;
+              const lat = item.lat;
+              const lng = item.lng;
+              return `
+                <div class="address-suggest-item p-2.5 cursor-pointer border-b border-slate-100 text-sm"
+                  onclick="selectAddressItem('${escapeHtml(building)}','${escapeHtml(street)}','${escapeHtml(districtName)}')">
+                  <div class="font-bold text-slate-800">${escapeHtml(fullAddr)}</div>
+                  <div class="text-xs text-slate-500">分區：${escapeHtml(districtName)}</div>
+                </div>
+              `;
+            }).join('');
+            suggestBox.classList.remove('hidden');
+          }catch(e){
+            suggestBox.innerHTML = `<div class="p-3 text-red-400 text-sm">地址服務暫時無法使用，請手動填寫</div>`;
+            suggestBox.classList.remove('hidden');
+          }
+        }, 450);
+      })
+      // 點畫面其他地方關閉下拉
+      document.addEventListener('click', function(ev){
+        if(!input.contains(ev.target) && !suggestBox.contains(ev.target)){
+          suggestBox.classList.add('hidden');
+        }
+      })
+    }
+
+    function selectAddressItem(building, street, districtName){
+      document.getElementById('buildingNameInput').value = building;
+      document.getElementById('streetAddressInput').value = street;
+      // 自動設定分區
+      const sel = document.getElementById('districtInput');
+      const opt = Array.from(sel.options).find(o=>o.value === districtName);
+      if(opt) sel.value = districtName;
+      onDistrictChange();
+      document.getElementById('addressSuggestBox').classList.add('hidden');
+    }
+
+    function toggleOverseasMode(){
+      const isOverseas = document.getElementById('isOverseasAddr').checked;
+      const addrSearchInput = document.getElementById('addressSearchInput');
+      const suggestBox = document.getElementById('addressSuggestBox');
+      if(isOverseas){
+        addrSearchInput.disabled = true;
+        addrSearchInput.placeholder = "海外地址不使用搜尋，直接在下方手動填寫";
+        suggestBox.classList.add('hidden');
+      }else{
+        addrSearchInput.disabled = false;
+        addrSearchInput.placeholder = "輸入屋苑 / 大廈 / 街道，例如：國康大樓";
+      }
+    }
+
+    function escapeHtml(str){
+      if(!str) return '';
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+
+    function bindPricePreview(){
+      const priceInput = document.getElementById('priceInput');
+      priceInput.addEventListener('input', function(){
+        const pv = Number(this.value);
+        const previewDom = document.getElementById('pricePreview');
+        if(pv>0){
+          previewDom.innerText = `✅ 每月租金預覽：HK$ ${pv.toLocaleString()} /月`;
+        }else{
+          previewDom.innerText = '';
+        }
+      })
     }
 
     function previewSelectedImage(event) {
@@ -301,7 +383,6 @@
       }
     }
 
-    // 💡 關鍵：精準結構化渲染，絕不拼接租金與地址！
     function renderListings() {
       const container = document.getElementById('listingsContainer');
       let data = allListings;
@@ -325,7 +406,6 @@
         const transportBus = item.transport_bus || '多條公車路線';
         const transportChina = item.transport_china || '交通便利';
 
-        // 嚴格讀取結構化欄位，絕不包含價格變數
         const buildingText = item.building_name ? item.building_name.trim() : '';
         const streetText = item.street_address ? item.street_address.trim() : (item.address || '').trim();
         
@@ -399,11 +479,33 @@
         const buildingNameVal = document.getElementById('buildingNameInput').value.trim();
         const streetAddressVal = document.getElementById('streetAddressInput').value.trim();
         const priceVal = Number(document.getElementById('priceInput').value);
+        const phoneVal = document.getElementById('phoneInput').value.trim();
+        const wechatVal = document.getElementById('wechatInput').value.trim();
 
-        if (!priceVal || priceVal <= 0) throw new Error("請輸入有效的金額");
+        // 校驗
+        if (!priceVal || priceVal <= 0) throw new Error("請輸入有效的租金金額");
         if (!buildingNameVal) throw new Error("請輸入大廈名稱");
+        if (!phoneVal && !wechatVal) throw new Error("⚠️ 必須至少填寫【電話】或【微信】其中一項聯絡方式！");
+        if(phoneVal && !/^[0-9]{8}$/.test(phoneVal)) throw new Error("香港手機號碼必須是8個數字，海外號碼可忽略此檢查");
 
-        // 寫入資料庫：嚴格對應欄位，絕不將價格寫入 address
+        // 提交前摘要確認
+        const summaryText = `📋 請仔細確認所有資料，確認後會公開給租客瀏覽：
+區域：${districtVal}
+物業大廈：${buildingNameVal}
+街道門牌：${streetAddressVal}
+每月租金：HK$${priceVal.toLocaleString()}
+🚇鐵路：${document.getElementById('transportMtrInput').value}
+🚌巴士：${document.getElementById('transportBusInput').value}
+☎️電話：${phoneVal || '沒有填寫'}
+💬微信：${wechatVal || '沒有填寫'}
+
+資料一旦發布，租客可以直接看見，是否確認發布？`;
+        if(!confirm(summaryText)){
+          submitBtn.disabled = false;
+          submitBtn.innerText = "🚀 確認發布單位";
+          return;
+        }
+
         const newListing = {
           district: districtVal,
           building_name: buildingNameVal,
@@ -411,8 +513,8 @@
           address: streetAddressVal ? `${buildingNameVal} (${streetAddressVal})` : buildingNameVal, 
           price: priceVal,
           image_url: uploadedBase64Image,
-          phone: document.getElementById('phoneInput').value || null,
-          wechat_id: document.getElementById('wechatInput').value || null,
+          phone: phoneVal || null,
+          wechat_id: wechatVal || null,
           transport_mtr: document.getElementById('transportMtrInput').value,
           transport_bus: document.getElementById('transportBusInput').value,
           transport_china: document.getElementById('transportChinaInput').value
@@ -434,7 +536,7 @@
           throw new Error(errData.message || `HTTP ${response.status}`);
         }
 
-        alert("🎉 租盤發布成功！數據結構完全正確。");
+        alert("🎉 租盤發布成功！地址已採用政府標準格式");
         document.getElementById('listingForm').reset();
         uploadedBase64Image = null;
         document.getElementById('imagePreviewContainer').classList.add('hidden');
